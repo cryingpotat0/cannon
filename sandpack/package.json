@@ -1,0 +1,73 @@
+{
+  "name": "sandpack",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "sandpack-client",
+    "sandpack-react",
+    "sandpack-themes",
+    "website/*"
+  ],
+  "nohoist": [
+    "website/docs/**",
+    "**/html-minifier-terser"
+  ],
+  "description": "",
+  "scripts": {
+    "test": "turbo run test --filter=\"@codesandbox/**\"",
+    "build": "turbo run build --filter=\"@codesandbox/**\" --filter=\"codesandbox-theme-docs\"",
+    "build:client": "turbo run build --filter=\"@codesandbox/sandpack-client\"",
+    "build:react": "turbo run build --filter=\"@codesandbox/sandpack-react\"",
+    "typecheck": "turbo run typecheck --filter=\"@codesandbox/**\"",
+    "lint": "turbo run lint --filter=\"@codesandbox/**\"",
+    "format": "turbo run format --filter=\"@codesandbox/**\"",
+    "format:check": "turbo run format:check --filter=\"@codesandbox/**\"",
+    "-----": "-----",
+    "dev:docs": "yarn workspace sandpack-docs dev",
+    "dev:react": "turbo run dev --filter=@codesandbox/sandpack-react --filter=@codesandbox/sandpack-client",
+    "dev:landing": "yarn workspace sandpack-landing dev -p 3001",
+    "dev:theme": "yarn workspace sandpack-theme dev -p 3002"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/codesandbox/sandpack"
+  },
+  "author": "CodeSandbox",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "@babel/preset-env": "^7.16.5",
+    "@babel/preset-react": "^7.16.5",
+    "@babel/preset-typescript": "^7.16.5",
+    "@rollup/plugin-commonjs": "^24.0.0",
+    "@rollup/plugin-node-resolve": "^15.0.1",
+    "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-terser": "^0.4.0",
+    "@rollup/plugin-typescript": "^10.0.1",
+    "@types/jest": "^27.4.0",
+    "@typescript-eslint/eslint-plugin": "^4.0.0",
+    "@typescript-eslint/parser": "^4.0.0",
+    "babel-eslint": "^10.0.0",
+    "babel-jest": "^27.4.5",
+    "eslint": "^7.5.0",
+    "eslint-config-prettier": "^8.1.0",
+    "eslint-config-react-app": "^6.0.0",
+    "eslint-plugin-flowtype": "^5.2.0",
+    "eslint-plugin-import": "^2.22.0",
+    "eslint-plugin-jsx-a11y": "^6.3.1",
+    "eslint-plugin-react": "^7.20.3",
+    "eslint-plugin-react-hooks": "^4.0.8",
+    "jest": "^27.4.5",
+    "lerna": "^7.4.1",
+    "lerna-changelog": "^2.2.0",
+    "lint-staged": "^10.5.4",
+    "prettier": "^2.2.1",
+    "react-test-renderer": "^18.1.0",
+    "rollup": "^3.9.1",
+    "rollup-plugin-string": "^3.0.0",
+    "turbo": "^1.5.5"
+  },
+  "lint-staged": {
+    "*": "prettier -u --write",
+    "*.{js,jsx,ts,tsx}": "eslint --cache --fix"
+  }
+}

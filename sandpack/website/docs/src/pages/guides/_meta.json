@@ -1,0 +1,8 @@
+{
+  "index": "Overview",
+  "private-packages": {
+    "title": "Private Packages",
+    "display": "hidden"
+  },
+  "local-dependencies": "Local dependencies"
+}

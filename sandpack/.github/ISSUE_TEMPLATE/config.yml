@@ -1,0 +1,4 @@
+contact_links:
+  - name: New discussion
+    url: https://github.com/codesandbox/sandpack/discussions
+    about: Have any questions or thoughts?
