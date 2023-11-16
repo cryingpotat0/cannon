@@ -68,6 +68,7 @@ def generate_output(output_queue: queue.Queue):
         yield line
 
 
+# TODO: keep_warm?
 @stub.function()
 @web_endpoint(method="POST")
 def run(item: RustInput):
@@ -76,6 +77,7 @@ def run(item: RustInput):
     root = "./rust_app"
 
     # Create files in the temp directory
+    # TODO: evaluate the security risk here, i couldn't get the NFS to work yet.
     for name, content in item.files.items():
         directory = f"{root}/{os.path.dirname(name)}"
         file_name = os.path.basename(name)
@@ -96,6 +98,8 @@ def run(item: RustInput):
     print(sb.returncode)
     stderr = [f"stderr: {l}\n" for l in sb.stderr.read().split('\n') if l]
     stdout = [f"stdout: {l}\n" for l in sb.stdout.read().split('\n') if l]
+
+    # TODO: make this stream for real when sandboxes support streaming.
     def fake_stream(stderr, stdout):
         for line in stderr:
             yield line
