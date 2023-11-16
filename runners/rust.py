@@ -94,11 +94,14 @@ def run(item: RustInput):
         )
     sb.wait()
     print(sb.returncode)
-    stderr = [f"stderr: {l}" for l in sb.stderr.read().split('\n') if l]
-    stdout = [f"stdout: {l}" for l in sb.stdout.read().split('\n') if l]
-    return "\n".join(stderr + stdout)
-
-
+    stderr = [f"stderr: {l}\n" for l in sb.stderr.read().split('\n') if l]
+    stdout = [f"stdout: {l}\n" for l in sb.stdout.read().split('\n') if l]
+    def fake_stream(stderr, stdout):
+        for line in stderr:
+            yield line
+        for line in stdout:
+            yield line
+    return StreamingResponse(fake_stream(stderr, stdout))
             
 
     try:
