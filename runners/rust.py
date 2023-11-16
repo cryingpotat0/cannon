@@ -1,9 +1,11 @@
+from io import BytesIO
 from typing import Iterator
 from pydantic import BaseModel
 from fastapi.responses import JSONResponse, StreamingResponse
-from fastapi import HTTPException
+from fastapi import HTTPException, FastAPI
 
-from modal import Image, Stub, web_endpoint
+from modal import Image, Stub, web_endpoint, NetworkFileSystem
+import modal
 import subprocess
 import os
 import threading
@@ -15,7 +17,6 @@ image = Image.from_registry(
             )
 
 stub = Stub("allpack_runners_rust", image=image)
-
 
 class RustInput(BaseModel):
     files: dict[str, str] = {
@@ -83,6 +84,23 @@ def run(item: RustInput):
         with open(f"{directory}/{file_name}", "w") as f:
             f.write(content)
 
+    sb = stub.spawn_sandbox(
+            "cargo",
+            "run",
+            timeout=60,
+            workdir="/sandbox",
+            mounts=[modal.Mount.from_local_dir(root, remote_path="/sandbox")],
+            image=image,
+        )
+    sb.wait()
+    print(sb.returncode)
+    stderr = [f"stderr: {l}" for l in sb.stderr.read().split('\n') if l]
+    stdout = [f"stdout: {l}" for l in sb.stdout.read().split('\n') if l]
+    return "\n".join(stderr + stdout)
+
+
+            
+
     try:
         # Run cargo run in a streaming fashion
         cmd = "cargo run"
@@ -95,3 +113,5 @@ def run(item: RustInput):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+def main():
+    app = fastapi()
