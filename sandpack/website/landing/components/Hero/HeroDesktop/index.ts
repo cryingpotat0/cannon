@@ -1,1 +1,0 @@
-export { HeroDesktop } from "./HeroDesktop";
