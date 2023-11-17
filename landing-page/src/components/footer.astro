@@ -1,0 +1,36 @@
+---
+import { Icon } from "astro-icon";
+import HeroImage from "~/components/hero-image.astro";
+import type { FooterLink } from "~/types";
+
+const links: Array<FooterLink> = [
+  {
+    url: "https://astro.build/",
+    description: "Astro's official website",
+    icon: "mdi:home",
+  },
+  {
+    url: "https://github.com/mhyfritz/astro-landing-page",
+    description: "View source on GitHub",
+    icon: "fa-brands:github-alt",
+  },
+  {
+    url: "https://astro.build/chat",
+    description: "Astro on Discord",
+    icon: "fa-brands:discord",
+  },
+  {
+    url: "https://twitter.com/astrodotbuild",
+    description: "Astro on Twitter",
+    icon: "fa-brands:twitter",
+  },
+];
+---
+
+<footer class="relative flex h-64 items-center justify-center text-secondary">
+    <ul>
+        <li class="items-center justify-center flex"> Inspired by <a class="ml-1 flex items-center gap-3 hover:!text-default text-secondary" href="https://sandpack.codesandbox.io/"> Sandpack from <Icon name="code-sandbox" class="h-5"/></a> </li>
+        <li class="items-center justify-center flex"> Built with <a href="https://codemirror.net/" class="ml-1 mr-1 flex items-center gap-1 hover:!text-default text-secondary"><Icon name="codemirror" class="h-5" /> CodeMirror </a> and <a href="https://modal.com/" class="ml-1 mr-1 flex items-center gap-1 hover:!text-default text-secondary"><Icon name="modal" class="h-5" /></a></li>
+        <li class="items-center justify-center flex"> Landing page built with <a href="https://astro.build/themes/details/astro-landing-page/" class="ml-2 mr-1 flex items-center gap-1 hover:!text-default text-secondary"><Icon name="astro" class="h-5" /> Astro </a></li>
+    </ul>
+</footer>
