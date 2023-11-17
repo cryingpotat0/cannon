@@ -68,8 +68,7 @@ def generate_output(output_queue: queue.Queue):
         yield line
 
 
-# TODO: keep_warm?
-@stub.function()
+@stub.function(keep_warm=1)
 @web_endpoint(method="POST")
 def run(item: RustInput):
     print(f"Received {item}")
