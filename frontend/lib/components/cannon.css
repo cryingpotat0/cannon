@@ -1,0 +1,12 @@
+#code-viewer > .cm-editor > .cm-scroller > .cm-content {
+    padding: 0 0.75rem 1.25rem 0.75rem;
+}
+
+#code-editor > .cm-editor {
+    padding: 16px;
+}
+
+#code-editor {
+    max-height: 30vh;
+    overflow: auto;
+}
