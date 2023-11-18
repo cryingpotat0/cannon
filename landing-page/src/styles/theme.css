@@ -4,7 +4,7 @@
   --color-text: #f80531; 
   --color-text-offset: #36041d; 
   --color-background: theme("colors.gray.50");
-  --color-background-offset: theme("colors.gray.100");
+  --color-background-offset: theme("colors.gray.50");
   --color-border: theme("colors.gray.900" / 10%);
 }
 

@@ -3,22 +3,24 @@ import Terminal from './Terminal';
 
 import { useState, MouseEvent, useEffect, useRef } from 'react';
 import './cannon.css';
-import { createTheme, ThemeOptions } from './create_theme';
+import { createTheme, solarizedLight, birdsOfParadise, ThemeOptions } from './create_theme';
 
 export type RustPlaygroundProps = {
   initialFiles: Record<string, string>,
+  initialOutput?: string,
   editorTheme?: ThemeOptions,
   viewerTheme?: ThemeOptions,
 }
 
 export function Cannon({
   initialFiles,
+  initialOutput,
   editorTheme,
   viewerTheme,
 }: RustPlaygroundProps) {
 
   const runRustUrl = 'https://cryingpotat0--allpack-runners-rust-run.modal.run';
-  const [data, setData] = useState<string[]>([]);
+  const [data, setData] = useState<string[]>(initialOutput ? [initialOutput] : []);
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<Record<string, string>>(initialFiles);
   const filesRef = useRef(files);
@@ -60,8 +62,8 @@ export function Cannon({
 
   const initialCode = initialFiles?.['src/main.rs'] || '';
 
-  const editorExtensions = editorTheme ? [createTheme(editorTheme)] : [];
-  const viewerExtensions = viewerTheme ? [createTheme(viewerTheme)] : [];
+  const editorExtensions = editorTheme ? [createTheme(editorTheme)] : [createTheme(birdsOfParadise)];
+  const viewerExtensions = viewerTheme ? [createTheme(viewerTheme)] : [createTheme(solarizedLight)];
 
   return (
     <>
