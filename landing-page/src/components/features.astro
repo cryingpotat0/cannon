@@ -5,40 +5,45 @@ import type { FeatureItem } from "~/types";
 
 const features: Array<FeatureItem> = [
   {
-    title: "Bring Your Own Framework",
+    title: "Fullstack Framework",
     description:
-      "Build your site using React, Svelte, Vue, Preact, web components, or just plain ol' HTML + JavaScript.",
+      "Support languages that can be compiled on the frontend, but gives you an easily deployable Modal server for languages that can't.",
     icon: "mdi:handshake",
   },
   {
-    title: "100% Static HTML, No JS",
+    title: "Configurable Themes",
     description:
-      "Astro renders your entire page to static HTML, removing all JavaScript from your final build by default.",
-    icon: "mdi:feather",
+      "Choose from a variety of themes, or create your own using ThemeMirror.",
+    icon: "mdi:theme",
+    todo: true,
   },
   {
-    title: "On-Demand Components",
+    title: "Universal Language Support",
     description:
-      "Need some JS? Astro can automatically hydrate interactive components when they become visible on the page. If the user never sees it, they never load it.",
-    icon: "mdi:directions-fork",
-  },
-  {
-    title: "Broad Integration",
-    description:
-      "Astro supports TypeScript, Scoped CSS, CSS Modules, Sass, Tailwind, Markdown, MDX, and any of your favorite npm packages.",
+      "Cannon supports every language under the sun, with easy integration support to add more (client-side or server-side).",
     icon: "mdi:graph",
+    todo: true,
   },
   {
-    title: "SEO Enabled",
+    title: "Multi-Tab Editing",
     description:
-      "Automatic sitemaps, RSS feeds, pagination and collections take the pain out of SEO and syndication.",
-    icon: "mdi:search-web",
+      "Make your examples as complicated as you want with multi-tab editing - only keeping relevant lines in each tab.",
+    icon: "mdi:tab",
+    todo: true,
   },
   {
-    title: "Community",
+    title: "Headless Mode",
     description:
-      "Astro is an open source project powered by hundreds of contributors making thousands of individual contributions.",
-    icon: "mdi:account-group",
+      "Easily configurable hooks to bring your own UI while using our language support.",
+    icon: "mdi:head",
+    todo: true,
+  },
+  {
+    title: "Secure By Default",
+    description:
+      "Deploy your backend on Modal with an application-layer WAF to prevent misuse.",
+    icon: "mdi:security",
+    todo: true,
   },
 ];
 ---
@@ -46,14 +51,24 @@ const features: Array<FeatureItem> = [
 <ContentSection title="Features" id="features">
   <ul class="grid max-w-6xl grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     {
-      features.map(({ title, description, icon }) => (
-        <li class="flex flex-col items-center gap-4 border border-default bg-offset p-6">
-          <div class="h-16 w-16 rounded-full border-2 border-current p-3">
-            <Icon name={icon} />
-          </div>
-          <p class="text-center font-extrabold text-xl">{title}</p>
-          <p class="text-center text-offset text-sm">{description}</p>
+      features.map(({ title, description, icon, todo }) => (
+        <li class="relative flex flex-col items-center gap-4 border border-default bg-offset p-6">
+            {Boolean(todo) ?
+                <div class="absolute top-12 left-12 transform -rotate-45 -translate-x-1/2 -translate-y-1/2 bg-red-600 text-white px-4 py-1">
+                    TODO
+                </div> :
+                null
+            }
+            <!-- Icon Container -->
+            <div class="h-16 w-16 rounded-full border-2 border-current p-3">
+                <Icon name={icon} />
+            </div>
+            <!-- Title -->
+            <p class="text-center font-extrabold text-xl">{title}</p>
+            <!-- Description -->
+            <p class="text-center text-offset text-sm">{description}</p>
         </li>
+
       ))
     }
   </ul>

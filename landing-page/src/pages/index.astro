@@ -10,9 +10,9 @@ import Splash from "~/components/splash.astro";
 import "~/styles/index.css";
 
 const { generator, site } = Astro;
-const image = new URL("social.jpg", site);
+const image = new URL("social.png", site);
 const description =
-  "Build fast websites, faster. Astro is a new kind of site builder for the modern web. Lightning-fast performance meets powerful developer experience.";
+  "Cannon - live-editable codeblocks in your browser.";
 ---
 
 <!doctype html>
@@ -20,11 +20,11 @@ const description =
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/cannon.svg" type="image/svg+xml" />
     <meta name="generator" content={generator} />
 
     <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@700&display=swap" rel="stylesheet">
-    <title>Astro Landing Page</title>
+    <title>Cannon</title>
     <meta name="description" content={description} />
 
     <!-- social media -->
