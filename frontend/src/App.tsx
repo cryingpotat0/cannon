@@ -1,25 +1,60 @@
+import { useEffect, useRef, useState } from 'react';
+import { Language } from '../lib/components/Cannon';
+import { getTemplate } from '../lib/components/templates';
 import { Cannon } from '../lib/main';
 
+// function App() {
+//   const { initialFiles, initialOutput } = getTemplate(Language.Rust);
+//   return (
+//     <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
+//       <Cannon
+//         languageProps={{
+//           language: Language.Rust,
+//         }}
+//         initialFiles={initialFiles}
+//         initialOutput={initialOutput}
+//       />
+//     </div>
+//   )
+// }
+
 function App() {
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [ready, setReady] = useState(false);
+  useEffect(() => {
+    if (!iframeRef.current) return;
+    setReady(true);
+  }, [iframeRef]);
+  return (
+    <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
+      {ready && iframeRef.current ? <CannonInner iframe={iframeRef.current} /> : null}
+      <iframe ref={iframeRef} style={{
+        border: '1px solid black',
+        height: '500px',
+        width: '100%',
+        borderRadius: '5px',
+      }}
+      ></iframe>
+    </div>
+  )
+}
+
+function CannonInner({
+  iframe
+}: {
+  iframe: HTMLIFrameElement
+}) {
+  const { initialFiles, initialOutput } = getTemplate(Language.Javascript);
+  console.log('iframe', iframe);
   return (
     <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
       <Cannon
-        initialFiles={{
-          'src/main.rs': `fn main() {
-  println!("Hello, world!");
-}`,
-          'Cargo.toml': `[package]
-name = "hello_world"
-version = "0.1.0"
-edition = "2021"`
+        languageProps={{
+          language: Language.Javascript,
+          iframe,
         }}
-        initialOutput={
-          `stderr:   Compiling hello_world v0.1.0 (/playground)
-stderr:   Finished dev [unoptimized + debuginfo] target(s) in 0.31s
-stderr:   Running \`/playground/target/debug/hello_world\`
-Hello, world!
-`
-        }
+        initialFiles={initialFiles}
+        initialOutput={initialOutput}
       />
     </div>
   )
