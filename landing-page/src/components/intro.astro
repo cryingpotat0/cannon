@@ -1,26 +1,13 @@
 ---
 import { Icon } from "astro-icon";
 import ContentSection from "~/components/content-section.astro";
-import Cannon from "~/components/cannon.astro";
+
+import Cannon from './cannon.jsx';
+
+// import { Cannon, Language, getTemplate } from "../../../frontend/lib/main";
+// import { Cannon } from "cannon-codeeditor";
+import "cannon-codeeditor/dist/style.css";
+
 ---
-<section
-  id="intro"
-  class="flex flex-col lg:grid lg:grid-cols-6 scroll-mt-24 gap-10 justify-center align-middle"
->
-  <div class="lg:col-span-4 justify-center w-full ">
-    <Cannon />
-  </div>
-  <div class="flex-1 flex lg:col-span-2 flex-col items-center gap-4">
-    <h2
-      class="gradient-text text-center font-extrabold tracking-tight text-6xl"
-    >
-      Build Better Blogs.
-    </h2>
-    <p class="max-w-xl text-center font-extrabold text-2xl">
-        Cannon is a new kind of code viewer for the
-        <span class="text-primary">modern</span> web.
-        <span class="text-primary">View, edit and run your code</span>
-         within the comfort of <span class="text-primary">Chrome</span>.
-    </p>
-  </div>
-</section>
+    <Cannon client:load />
+

@@ -1,7 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Language } from '../lib/components/Cannon';
-import { getTemplate } from '../lib/components/templates';
-import { Cannon } from '../lib/main';
+import { Cannon, Language, getTemplate } from '../lib/main';
 
 // function App() {
 //   const { initialFiles, initialOutput } = getTemplate(Language.Rust);
@@ -45,7 +43,6 @@ function CannonInner({
   iframe: HTMLIFrameElement
 }) {
   const { initialFiles, initialOutput } = getTemplate(Language.Javascript);
-  console.log('iframe', iframe);
   return (
     <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
       <Cannon

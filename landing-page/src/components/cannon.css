@@ -1,0 +1,23 @@
+#cannon-codeeditor {
+    width: 100%;
+    font-size: clamp(0.7rem, calc(0.7rem + ((0.8 - 0.7) * ((100vw - 20rem) / (96 - 20)))), 0.8rem);
+    vertical-align: middle;
+}
+
+#code-viewer {
+    max-height:35vh;
+    overflow:auto
+}
+
+#code-editor {
+    max-height:35vh;
+    overflow:auto
+}
+
+#code-viewer .cm-editor {
+    min-height: 30vh;
+}
+
+#code-editor .cm-editor {
+    min-height: 30vh;
+}
