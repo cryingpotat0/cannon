@@ -5,6 +5,9 @@ import { useState, MouseEvent, useEffect, useRef, Dispatch, SetStateAction, Muta
 import './cannon.css';
 import { createTheme, solarizedLight, birdsOfParadise, ThemeOptions } from './create_theme';
 import { ClientOptions, SandboxSetup, SandpackBundlerFiles, SandpackClient, loadSandpackClient } from '@codesandbox/sandpack-client';
+import { Extension } from '@codemirror/state';
+import { rust } from '@codemirror/lang-rust';
+// import { javascript } from '@codemirror/lang-javascript';
 
 export enum Language {
   Rust = 'rust',
@@ -50,6 +53,22 @@ const filesForSandpack = (files: Record<string, string>): SandpackBundlerFiles =
     };
   }, {});
 }
+
+const getLanguageExtension = (language: Language): Extension => {
+  switch (language) {
+    case Language.Rust: {
+      return rust();
+    }
+    case Language.Javascript: {
+      // TODO: The javascript extension seems to break rerunning the code? Very weird.
+      return rust();
+    }
+    default:
+      throw new Error(`Language ${language} not supported`);
+  }
+}
+
+
 
 const onRunGenerator = (
   {
@@ -154,6 +173,9 @@ export function Cannon({
   viewerTheme,
 }: CannonProps) {
 
+  editorTheme ??= birdsOfParadise;
+  viewerTheme ??= solarizedLight;
+
   const [data, setData] = useState<string[]>(initialOutput ? [initialOutput] : []);
   const [isLoading, setIsLoading] = useState(false);
   const [files, setFiles] = useState<Record<string, string>>(initialFiles);
@@ -195,8 +217,11 @@ export function Cannon({
             options)
           client.listen((msg) => {
             console.log('update', client.status, msg);
+            if (msg.type === "console") {
+              const logs = msg.log.flatMap(({ data }) => data + '\n');
+              setData(prevData => [...prevData, ...logs]);
+            }
           });
-          // console.log('3. running languageInitializationResource useEffect async', languageProps.language, client, languageInitializationResources);
 
           languageInitializationResources.current = {
             language: Language.Javascript,
@@ -243,8 +268,8 @@ export function Cannon({
   const setCode = setCodeGenerator(languageProps.language, setFiles);
   const initialCode = initialCodeExtractor(languageProps.language, initialFiles);
 
-  const editorExtensions = editorTheme ? [createTheme(editorTheme)] : [createTheme(birdsOfParadise)];
-  const viewerExtensions = viewerTheme ? [createTheme(viewerTheme)] : [createTheme(solarizedLight)];
+  const editorExtensions = [getLanguageExtension(languageProps.language), createTheme(editorTheme),];
+  const viewerExtensions = [createTheme(viewerTheme)];
 
   return (
     <>

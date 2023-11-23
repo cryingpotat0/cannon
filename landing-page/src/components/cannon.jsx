@@ -1,5 +1,5 @@
-// import { Cannon } from "cannon-codeeditor";
-import { Cannon, Language, getTemplate } from "../../../frontend/lib/main";
+// import { Cannon, Language, getTemplate } from "../../../frontend/lib/main";
+import { Cannon, Language, getTemplate } from "cannon-codeeditor";
 import "cannon-codeeditor/dist/style.css";
 import "./cannon.css";
 import { useEffect, useRef, useState } from "react";

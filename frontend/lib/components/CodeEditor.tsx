@@ -1,4 +1,3 @@
-import { rust } from '@codemirror/lang-rust';
 import CodeMirror from './codemirror';
 import { useEffect, useRef } from 'react';
 
@@ -31,13 +30,12 @@ function CodeEditor({
       extentions: [
         basicSetup,
         keymap.of([indentWithTab]),
-        rust(),
         EditorView.updateListener.of(debounce((update: ViewUpdate) => {
           if (update.docChanged) {
             setCode(update.view.state.doc.toString());
           }
         }, 150)),
-      ].concat(extensions || []),
+      ].concat(extensions || [])
     });
     // @ts-ignore
     cmEditor.current = editor;
