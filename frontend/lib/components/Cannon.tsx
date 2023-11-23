@@ -95,6 +95,7 @@ const onRunGenerator = (
     switch (language) {
       case 'javascript': {
         const { client } = languageInitializationResources.current;
+        console.log('3. updating sandbox', filesRef.current);
         client.updateSandbox({
           files: filesForSandpack(filesRef.current),
         });
@@ -216,7 +217,7 @@ export function Cannon({
             content,
             options)
           client.listen((msg) => {
-            console.log('update', client.status, msg);
+            // console.log('update', client.status, msg);
             if (msg.type === "console") {
               const logs = msg.log.flatMap(({ data }) => data + '\n');
               setData(prevData => [...prevData, ...logs]);
@@ -265,8 +266,6 @@ export function Cannon({
     filesRef.current = files;
   }, [files]);
 
-  const setCode = setCodeGenerator(languageProps.language, setFiles);
-  const initialCode = initialCodeExtractor(languageProps.language, initialFiles);
 
   const editorExtensions = [getLanguageExtension(languageProps.language), createTheme(editorTheme),];
   const viewerExtensions = [createTheme(viewerTheme)];
@@ -274,8 +273,8 @@ export function Cannon({
   return (
     <>
       <CodeEditor
-        code={initialCode}
-        setCode={setCode}
+        files={files}
+        setFiles={setFiles}
         extensions={editorExtensions}
       />
       <Terminal

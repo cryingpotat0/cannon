@@ -84,7 +84,8 @@ export const createTheme = ({ variant, settings, styles }: ThemeOptions): Extens
       color: settings.foreground,
     },
     '.cm-panels-top': {
-      borderBottom: '0px'
+      borderBottom: '0px',
+      zIndex: 1,
     },
   }, {
     dark: variant === 'dark',
