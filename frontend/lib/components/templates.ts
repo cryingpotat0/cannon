@@ -11,6 +11,8 @@ export const getTemplate = (language: Language): Template => {
       return rustTemplate()
     case Language.Javascript:
       return javascriptTemplate()
+    case Language.Go:
+      return goTemplate()
     default:
       throw new Error(`Unknown language: ${language}`)
   }
@@ -140,3 +142,19 @@ root.render(
     },
   }
 };
+
+const goTemplate = (): Template => ({
+  initialFiles: {
+    'main.go': `package main
+
+import "fmt"
+
+func main() {
+  fmt.Println("Hello, world!")
+}`,
+  },
+  initialOutput:
+    `Hello, world!
+`
+});
+

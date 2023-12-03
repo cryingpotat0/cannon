@@ -38,17 +38,17 @@ function App() {
 }
 
 function CannonInner({
-  iframe
+  // iframe
 }: {
   iframe: HTMLIFrameElement
 }) {
-  const { initialFiles, initialOutput } = getTemplate(Language.Javascript);
+  const { initialFiles, initialOutput } = getTemplate(Language.Go);
   return (
     <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
       <Cannon
         languageProps={{
-          language: Language.Javascript,
-          iframe,
+          language: Language.Go,
+          // iframe,
         }}
         initialFiles={initialFiles}
         initialOutput={initialOutput}

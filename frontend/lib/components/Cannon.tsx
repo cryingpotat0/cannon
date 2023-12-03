@@ -12,6 +12,7 @@ import { rust } from '@codemirror/lang-rust';
 export enum Language {
   Rust = 'rust',
   Javascript = 'javascript',
+  Go = 'go',
 }
 
 // DiscriminatedUnion for specific per language props.
@@ -20,6 +21,8 @@ export type LanguageProps = {
 } | {
   language: Language.Javascript,
   iframe: HTMLIFrameElement,
+} | {
+  language: Language.Go,
 };
 
 type LanguageInitializationResources = {
@@ -32,6 +35,9 @@ type LanguageInitializationResources = {
 } | {
   language: undefined,
   state: 'destroyed',
+} | {
+  language: Language.Go,
+  state: 'initialized',
 };
 
 
@@ -63,6 +69,10 @@ const getLanguageExtension = (language: Language): Extension => {
       // TODO: The javascript extension seems to break rerunning the code? Very weird.
       return rust();
     }
+    case Language.Go: {
+      // err I can't find the go package
+      return rust();
+    }
     default:
       throw new Error(`Language ${language} not supported`);
   }
@@ -86,6 +96,8 @@ const onRunGenerator = (
   if (!languageInitializationResources.current) {
   }
 
+  console.log('2. onRunGenerator', languageInitializationResources.current);
+
 
   return async (_event: MouseEvent) => {
     setIsLoading(true);
@@ -102,7 +114,7 @@ const onRunGenerator = (
         break;
       }
       case 'rust': {
-        const runRustUrl = 'https://cryingpotat0--allpack-runners-rust-run.modal.run';
+        const runRustUrl = 'https://cryingpotat0--cannon-runners-run.modal.run';
         const response = await fetch(runRustUrl, {
           method: 'POST',
           headers: {
@@ -110,8 +122,32 @@ const onRunGenerator = (
           },
           body: JSON.stringify({
             files: filesRef.current,
+            language: 'rust',
           }),
         });
+        const reader = response.body?.getReader();
+        while (reader) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const text = new TextDecoder().decode(value);
+          setData(prevData => [...prevData, text]);
+        }
+        break;
+      }
+      case 'go': {
+        const runGoUrl = 'https://cryingpotat0--cannon-runners-run.modal.run';
+        const response = await fetch(runGoUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            files: filesRef.current,
+            language: 'go',
+          }),
+        });
+
         const reader = response.body?.getReader();
         while (reader) {
           const { done, value } = await reader.read();
@@ -147,7 +183,7 @@ export function Cannon({
   const languageInitializationResources = useRef<LanguageInitializationResources>();
 
   useEffect(() => {
-    if (languageInitializationResources.current) return;
+    if (languageInitializationResources.current?.state === 'initialized') return;
     (async () => {
       const { language } = languageProps;
       switch (language) {
@@ -155,6 +191,14 @@ export function Cannon({
           languageInitializationResources.current = {
             state: 'initialized',
             language: Language.Rust,
+          };
+          break;
+        }
+        case Language.Go: {
+          console.log('1. initializing go');
+          languageInitializationResources.current = {
+            state: 'initialized',
+            language: Language.Go,
           };
           break;
         }
@@ -215,11 +259,17 @@ export function Cannon({
         }
       };
       languageInitializationResources.current = {
-        language: undefined,
         state: 'destroyed',
+        language: undefined,
       };
     }
-  }, []);
+  }, [languageProps]);
+
+
+  useEffect(() => {
+    console.log('languageInitializationResources changed', languageInitializationResources.current);
+  }, [languageProps]);
+
 
 
   const onRun = onRunGenerator({

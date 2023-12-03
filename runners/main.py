@@ -6,7 +6,6 @@ import modal
 import os
 from time import time
 
-from synchronicity.async_wrap import collections
 from interface import Runner, Language, Input
 from go import GoRunner
 from rust import RustRunner
