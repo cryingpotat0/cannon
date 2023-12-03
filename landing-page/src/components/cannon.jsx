@@ -1,5 +1,5 @@
-import { Cannon, Language, getTemplate } from "../../../frontend/lib/main";
-// import { Cannon, Language, getTemplate } from "cannon-codeeditor";
+// import { Cannon, Language, getTemplate } from "../../../frontend/lib/main";
+import { Cannon, Language, getTemplate } from "cannon-codeeditor";
 import "cannon-codeeditor/dist/style.css";
 import "./cannon.css";
 import { useEffect, useRef, useState } from "react";
@@ -11,8 +11,6 @@ export default function CannonSection() {
         language: Language.Rust
     });
     useEffect(() => {
-        console.log("language changed", language);
-        console.log("iframeRef", iframeRef);
         if (languageProps.language === language) {
             return;
         }
@@ -27,11 +25,6 @@ export default function CannonSection() {
             });
         }
     }, [language, iframeRef]);
-
-    useEffect(() => {
-        console.log("languageProps changed", languageProps);
-    }, [languageProps]);
-
 
 
     const activeCss = "bg-primary text-white";
@@ -79,27 +72,26 @@ export default function CannonSection() {
             </div>
             <div className="flex-1 flex lg:col-span-2 flex-col items-center gap-4">
                 <>
-                    <div className={language !== Language.Javascript ? "hidden" : ""}>
-                        <iframe ref={newRef => setIframeRef(newRef)} className={"w-full h-96 mt-12"} />
+                    <div className={language !== Language.Javascript ? "hidden" : "w-full h-96 mt-12"}>
+                        <iframe ref={newRef => setIframeRef(newRef)} className={"w-full h-full"} />
                     </div>
-                    <div className={language === Language.Javascript ? "hidden" : ""}>
+                    <div className={language === Language.Javascript ? "hidden" : "w-full h-96 mt-12"}>
                         <h2
-                            className="gradient-text text-center font-extrabold tracking-tight text-6xl"
+                            className="gradient-text text-center font-extrabold tracking-tight text-6xl leading-tight"
                         >
                             Build Better Blogs.
                         </h2>
-                        <p className="max-w-xl text-center font-extrabold text-2xl">
-                            Cannon is a new kind of code viewer for the
-                            <span className="text-primary">modern</span> web.
-                            <span className="text-primary">View, edit and run your code</span>
-                            within the comfort of <span className="text-primary">Chrome</span>.
+                        <p className="max-w-xl m-auto text-center font-extrabold text-xl leading-tight">
+                            Cannon is a new kind of code viewer <br />
+                            for the modern web. <br />
+                            View, edit and run your code <br />
+                            within the comfort of Chrome. <br />
                         </p>
                     </div>
                 </>
             </div>
         </section>
     )
-
 }
 
 

@@ -62,29 +62,29 @@ const javascriptTemplate = () => {
               "test": "react-scripts test",
               "eject": "react-scripts eject"
             }
-          }
+          },
+          null,
+          2
         )
       ,
       "/src/App.js": `
 function App() {
-    console.log('hello');
-return (
-  <div className= "App" >
-  <header className="App-header" >
-    <p>
-    Edit < code > src / App.js < /code> and save to reload.
-    < /p>
-    < a
-className = "App-link"
-href = "https://reactjs.org"
-target = "_blank"
-rel = "noopener noreferrer"
-  >
-  Learn React
-    < /a>
-    < /header>
-    < /div>
-  );
+    console.log("Hello world!");
+    return (
+        <div>
+            <h2
+                className="gradient-text text-center font-extrabold tracking-tight text-7xl leading-tight"
+            >
+                Build Better Blogs.
+            </h2>
+            <p className="m-auto max-w-xl text-center font-extrabold text-3xl leading-tight" style={{ color: '#f80531' }}>
+                Cannon is a new kind of code viewer <br /> 
+                for the modern web. <br />
+                View, edit and run your code <br />
+                within the comfort of Chrome. <br />
+            </p>
+        </div>
+    );
 }
 
 export default App;
@@ -98,72 +98,45 @@ import App from './App';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-  <App />
-  < /React.StrictMode>
-);
-
-`,
+    <React.StrictMode>
+        <App />
+    </React.StrictMode>
+);`,
       "/public/index.html": `
-  < !DOCTYPE html >
-    <html lang="en" >
-      <head>
-      <meta charset="utf-8" />
-        <link rel="icon" href = "%PUBLIC_URL%/favicon.ico" />
-          <meta name="viewport" content = "width=device-width, initial-scale=1" />
-            <meta name="theme-color" content = "#000000" />
-              <meta
-      name="description"
-content = "Web site created using create-react-app"
-  />
-  <link rel="apple-touch-icon" href = "%PUBLIC_URL%/logo192.png" />
-    <!--
-    manifest.json provides metadata used when your web app is installed on a
-      user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
--->
-  <link rel="manifest" href = "%PUBLIC_URL%/manifest.json" />
-    <!--
-    Notice the use of % PUBLIC_URL % in the tags above.
-      It will be replaced with the URL of the \`public\` folder during the build.
-      Only files inside the \`public\` folder can be referenced from the HTML.
-
-      Unlike "/favicon.ico" or "favicon.ico", "%PUBLIC_URL%/favicon.ico" will
-      work correctly both with client-side routing and a non-root public URL.
-      Learn how to configure a non-root public URL by running \`npm run build\`.
-    -->
-    <title>React App</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run \`npm start\` or \`yarn start\`.
-      To create a production bundle, use \`npm run build\` or \`yarn build\`.
-    -->
-  </body>
-</html>
-        `,
+<html lang="en" >
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content = "width=device-width, initial-scale=1" />
+        <meta name="theme-color" content = "#000000" />
+        <meta
+                name="description"
+                content = "Web site created using create-react-app"
+                />
+        <title>React App</title>
+    </head>
+    <body>
+        <noscript>You need to enable JavaScript to run this app.</noscript>
+        <div id="root"></div>
+    </body>
+</html>`,
       "/src/index.css": `
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+      .text-primary: {
+        color: #f80531;
+      }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
-}
-        `,
+      .gradient-text {
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+        --tw-gradient-from: #f80531 var(--tw-gradient-from-position);
+        --tw-gradient-to: rgb(248 5 49 / 0) var(--tw-gradient-to-position);
+        --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+        --tw-gradient-to: #36041d var(--tw-gradient-to-position);
+      }
+
+
+      `,
     },
   }
 };

@@ -129,43 +129,6 @@ const onRunGenerator = (
   }
 };
 
-const initialCodeExtractor = (language: Language, initialFiles: Record<string, string>): string => {
-  switch (language) {
-    case 'rust': {
-      return initialFiles['src/main.rs'];
-    }
-    case 'javascript': {
-      return initialFiles['/src/App.js'];
-    }
-    default:
-      throw new Error(`Language ${language} not supported`);
-  }
-}
-
-const setCodeGenerator = (language: Language, setFiles: Dispatch<SetStateAction<Record<string, string>>>) => {
-  return (code: string) => {
-    switch (language) {
-      case 'rust': {
-        setFiles(prevFiles => ({
-          ...prevFiles,
-          'src/main.rs': code,
-        }));
-        break;
-      }
-      case 'javascript': {
-        setFiles(prevFiles => ({
-          ...prevFiles,
-          '/src/App.js': code,
-        }));
-        break;
-      }
-      default:
-        throw new Error(`Language ${language} not supported`);
-    }
-  }
-}
-
-
 export function Cannon({
   languageProps,
   initialFiles,
@@ -210,6 +173,10 @@ export function Cannon({
             // logLevel: SandpackLogLevel.Debug
             showOpenInCodeSandbox: false,
             // clearConsoleOnFirstCompile: true,
+
+            // TODO: understand why this is needed. 
+            // then do the plumbing to pass it from up there.
+            externalResources: ["https://cdn.tailwindcss.com"],
           };
 
           const client = await loadSandpackClient(
@@ -217,7 +184,7 @@ export function Cannon({
             content,
             options)
           client.listen((msg) => {
-            // console.log('update', client.status, msg);
+            console.log('update', client.status, msg);
             if (msg.type === "console") {
               const logs = msg.log.flatMap(({ data }) => data + '\n');
               setData(prevData => [...prevData, ...logs]);

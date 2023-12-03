@@ -26,7 +26,6 @@ function CodeEditor({
 
   useEffect(() => {
     activeTabRef.current = activeTab;
-    console.log('activeTabRef.current', activeTabRef.current);
   }, [activeTab]);
 
 
@@ -40,7 +39,7 @@ function CodeEditor({
         basicSetup,
         keymap.of([indentWithTab]),
         EditorView.updateListener.of(debounce((update: ViewUpdate) => {
-          console.log('update', update);
+          // console.log('update', update);
           if (update.docChanged) {
             // setCode(update.view.state.doc.toString());
             // console.log('activeTabRef.current', activeTabRef.current);
