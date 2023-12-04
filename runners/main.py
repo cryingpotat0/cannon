@@ -1,3 +1,4 @@
+from typing import Tuple
 from fastapi.responses import StreamingResponse
 from fastapi import HTTPException, Request
 
@@ -11,7 +12,7 @@ from go import GoRunner
 from rust import RustRunner
 from collections import deque
 
-MAX_REQUESTS_PER_MINUTE = 2
+MAX_REQUESTS_PER_MINUTE = 5
 stub = Stub("cannon_runners")
 stub.rate_limiter = modal.Dict.new()
 
@@ -24,32 +25,38 @@ def get_language_runner(lang: Language) -> Runner:
         raise Exception(f"Unknown language {lang}")
 
 
-# TODO: this doesn't work yet, the deque's are always showing up as empty.
+# TODO: This isn't quite atomic yet, but it's good enough to start with.
 def rate_limiter(request: Request):
     ip_address = request.client.host # type: ignore
-    current_time = time()
-    one_minute_ago = current_time - 60
-
     shared_dict: modal.Dict = stub.rate_limiter # type: ignore
 
     try:
-        current_deque = shared_dict[ip_address] 
+        shared_dict[ip_address] 
     except KeyError:
+        print(f"Creating new deque for {ip_address}")
         shared_dict[ip_address] = deque(maxlen=MAX_REQUESTS_PER_MINUTE) # type: ignore
 
-    print(f"Current deque: {shared_dict[ip_address]}")
-        
-    if len(shared_dict[ip_address]) < MAX_REQUESTS_PER_MINUTE:
-        shared_dict[ip_address].appendleft(current_time)
-        return True  # Request allowed
+    current_deque = shared_dict[ip_address]
+    allowed, new_deque = rate_limiter_internal(ip_address, current_deque)
+    shared_dict[ip_address] = new_deque
+    return allowed
+
+def rate_limiter_internal(ip_address, current_deque) -> Tuple[bool, deque]:
+    print(f"Current deque: {current_deque}")
+    current_time = time()
+    one_minute_ago = current_time - 60
+
+    if len(current_deque) < MAX_REQUESTS_PER_MINUTE:
+        current_deque.appendleft(current_time)
+        return (True, current_deque) # Request allowed
 
     # Deque is full, check the oldest request
-    if shared_dict[ip_address][-1] < one_minute_ago:
-        shared_dict[ip_address].pop()
-        shared_dict[ip_address].appendleft(current_time)
-        return True  # Request allowed
+    if current_deque[-1] < one_minute_ago:
+        current_deque.pop()
+        current_deque.appendleft(current_time)
+        return (True, current_deque)  # Request allowed
 
-    return False
+    return (False, current_deque)
 
 @stub.function(keep_warm=1, allow_concurrent_inputs=5)
 @web_endpoint(method="POST")
