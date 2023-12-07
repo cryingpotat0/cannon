@@ -7,8 +7,9 @@ import modal
 import os
 from time import time
 
-from interface import Runner, Language, Input
+from interface import Runner, RunnerType, Input
 from go import GoRunner
+from maelstrom_go import MaelstromGoRunner
 from rust import RustRunner
 from collections import deque
 
@@ -16,11 +17,13 @@ MAX_REQUESTS_PER_MINUTE = 5
 stub = Stub("cannon_runners")
 stub.rate_limiter = modal.Dict.new()
 
-def get_language_runner(lang: Language) -> Runner:
-    if lang == Language.RUST:
+def get_language_runner(lang: RunnerType) -> Runner:
+    if lang == RunnerType.RUST:
         return RustRunner()
-    elif lang == Language.GO:
+    elif lang == RunnerType.GO:
         return GoRunner()
+    elif lang == RunnerType.MAELSTROM_GO:
+        return MaelstromGoRunner()
     else:
         raise Exception(f"Unknown language {lang}")
 

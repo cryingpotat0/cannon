@@ -1,10 +1,10 @@
-from interface import Language, Runner
+from interface import RunnerType, Runner
 from modal import Image
 
 
 class RustRunner(Runner):
-    def get_lang(self) -> Language:
-        return Language.RUST
+    def get_lang(self) -> RunnerType:
+        return RunnerType.RUST
 
     def get_image(self) -> Image:
         return Image.from_registry(

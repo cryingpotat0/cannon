@@ -274,3 +274,155 @@ export const espresso: ThemeOptions = {
     },
   ],
 }
+
+export const ayuLight: ThemeOptions =
+{
+  variant: 'light',
+  settings: {
+    background: '#fcfcfc',
+    foreground: '#5c6166',
+    caret: '#ffaa33',
+    selection: '#036dd626',
+    gutterBackground: '#fcfcfc',
+    gutterForeground: '#8a919966',
+    lineHighlight: '#8a91991a',
+  },
+  styles: [
+    {
+      tag: t.comment,
+      color: '#787b8099',
+    },
+    {
+      tag: t.string,
+      color: '#86b300',
+    },
+    {
+      tag: t.regexp,
+      color: '#4cbf99',
+    },
+    {
+      tag: [t.number, t.bool, t.null],
+      color: '#ffaa33',
+    },
+    {
+      tag: t.variableName,
+      color: '#5c6166',
+    },
+    {
+      tag: [t.definitionKeyword, t.modifier],
+      color: '#fa8d3e',
+    },
+    {
+      tag: [t.keyword, t.special(t.brace)],
+      color: '#fa8d3e',
+    },
+    {
+      tag: t.operator,
+      color: '#ed9366',
+    },
+    {
+      tag: t.separator,
+      color: '#5c6166b3',
+    },
+    {
+      tag: t.punctuation,
+      color: '#5c6166',
+    },
+    {
+      tag: [t.definition(t.propertyName), t.function(t.variableName)],
+      color: '#f2ae49',
+    },
+    {
+      tag: [t.className, t.definition(t.typeName)],
+      color: '#22a4e6',
+    },
+    {
+      tag: [t.tagName, t.typeName, t.self, t.labelName],
+      color: '#55b4d4',
+    },
+    {
+      tag: t.angleBracket,
+      color: '#55b4d480',
+    },
+    {
+      tag: t.attributeName,
+      color: '#f2ae49',
+    },
+  ],
+};
+
+export const noctisLilac: ThemeOptions = {
+  variant: 'light',
+  settings: {
+    background: '#f2f1f8',
+    foreground: '#0c006b',
+    caret: '#5c49e9',
+    selection: '#d5d1f2',
+    gutterBackground: '#f2f1f8',
+    gutterForeground: '#0c006b70',
+    lineHighlight: '#e1def3',
+  },
+  styles: [
+    {
+      tag: t.comment,
+      color: '#9995b7',
+    },
+    {
+      tag: t.keyword,
+      color: '#ff5792',
+      fontWeight: 'bold',
+    },
+    {
+      tag: [t.definitionKeyword, t.modifier],
+      color: '#ff5792',
+    },
+    {
+      tag: [t.className, t.tagName, t.definition(t.typeName)],
+      color: '#0094f0',
+    },
+    {
+      tag: [t.number, t.bool, t.null, t.special(t.brace)],
+      color: '#5842ff',
+    },
+    {
+      tag: [t.definition(t.propertyName), t.function(t.variableName)],
+      color: '#0095a8',
+    },
+    {
+      tag: t.typeName,
+      color: '#b3694d',
+    },
+    {
+      tag: [t.propertyName, t.variableName],
+      color: '#fa8900',
+    },
+    {
+      tag: t.operator,
+      color: '#ff5792',
+    },
+    {
+      tag: t.self,
+      color: '#e64100',
+    },
+    {
+      tag: [t.string, t.regexp],
+      color: '#00b368',
+    },
+    {
+      tag: [t.paren, t.bracket],
+      color: '#0431fa',
+    },
+    {
+      tag: t.labelName,
+      color: '#00bdd6',
+    },
+    {
+      tag: t.attributeName,
+      color: '#e64100',
+    },
+    {
+      tag: t.angleBracket,
+      color: '#9995b7',
+    },
+  ],
+};

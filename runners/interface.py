@@ -3,18 +3,19 @@ from pydantic import BaseModel
 from abc import ABC, abstractmethod
 from modal import Image
 
-class Language(Enum):
+class RunnerType(Enum):
     RUST = "rust"
     GO = "go"
+    MAELSTROM_GO = "maelstrom_go"
 
 class Input(BaseModel):
     files: dict[str, str] = {}
     command: str = ""
-    language: Language = Language.RUST
+    language: RunnerType = RunnerType.RUST
 
 class Runner(ABC):
     @abstractmethod
-    def get_lang(self) -> Language:
+    def get_lang(self) -> RunnerType:
         pass
 
     @abstractmethod

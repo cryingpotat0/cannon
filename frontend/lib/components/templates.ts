@@ -147,11 +147,20 @@ const goTemplate = (): Template => ({
   initialFiles: {
     'main.go': `package main
 
-import "fmt"
+import (
+  "fmt"
+  "github.com/google/uuid"
+)
 
 func main() {
-  fmt.Println("Hello, world!")
+  id := uuid.New()
+  fmt.Printf("Generated UUID: %s\\n", id.String())
 }`,
+    'go.mod': `module hello_world
+
+go 1.18
+
+require github.com/google/uuid v1.3.0`
   },
   initialOutput:
     `Hello, world!

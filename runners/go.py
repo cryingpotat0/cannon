@@ -1,9 +1,9 @@
-from interface import Language, Runner
+from interface import RunnerType, Runner
 from modal import Image
 
 class GoRunner(Runner):
-    def get_lang(self) -> Language:
-        return Language.GO
+    def get_lang(self) -> RunnerType:
+        return RunnerType.GO
 
     def get_image(self) -> Image:
         return Image.from_registry(
@@ -17,15 +17,23 @@ class GoRunner(Runner):
 package main
 
 import (
-    "fmt"
+  "fmt"
+  "github.com/google/uuid"
 )
 
 func main() {
-    fmt.Println("Hello, world!")
+  id := uuid.New()
+  fmt.Printf("Generated UUID: %s\\n", id.String())
 }
+""",
+        "go.mod": """
+module main
+go 1.18
+
+require github.com/google/uuid v1.3.0
 """,
         }
 
     def get_default_command(self) -> str:
-        return "go run main.go"
+        return "go mod tidy && go run main.go"
 

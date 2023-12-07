@@ -3,7 +3,7 @@ import Terminal from './Terminal';
 
 import { useState, MouseEvent, useEffect, useRef, Dispatch, SetStateAction, MutableRefObject } from 'react';
 import './cannon.css';
-import { createTheme, solarizedLight, birdsOfParadise, ThemeOptions } from './create_theme';
+import { createTheme, solarizedLight, ThemeOptions } from './create_theme';
 import { ClientOptions, SandboxSetup, SandpackBundlerFiles, SandpackClient, loadSandpackClient } from '@codesandbox/sandpack-client';
 import { Extension } from '@codemirror/state';
 import { rust } from '@codemirror/lang-rust';
@@ -173,7 +173,7 @@ export function Cannon({
   viewerTheme,
 }: CannonProps) {
 
-  editorTheme ??= birdsOfParadise;
+  editorTheme ??= solarizedLight;
   viewerTheme ??= solarizedLight;
 
   const [data, setData] = useState<string[]>(initialOutput ? [initialOutput] : []);
