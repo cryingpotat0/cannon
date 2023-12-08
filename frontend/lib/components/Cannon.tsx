@@ -1,6 +1,7 @@
 import CodeEditor from './CodeEditor';
 import Terminal from './Terminal';
 
+import { ViewUpdate } from '@codemirror/view';
 import { useState, MouseEvent, useEffect, useRef, Dispatch, SetStateAction, MutableRefObject } from 'react';
 import './cannon.css';
 import { createTheme, solarizedLight, ThemeOptions } from './create_theme';
@@ -13,6 +14,7 @@ export enum Language {
   Rust = 'rust',
   Javascript = 'javascript',
   Go = 'go',
+  MaelstromGo = 'maelstrom_go',
 }
 
 // DiscriminatedUnion for specific per language props.
@@ -23,6 +25,8 @@ export type LanguageProps = {
   iframe: HTMLIFrameElement,
 } | {
   language: Language.Go,
+} | {
+  language: Language.MaelstromGo,
 };
 
 type LanguageInitializationResources = {
@@ -38,6 +42,9 @@ type LanguageInitializationResources = {
 } | {
   language: Language.Go,
   state: 'initialized',
+} | {
+  language: Language.MaelstromGo,
+  state: 'initialized',
 };
 
 
@@ -47,6 +54,7 @@ export type CannonProps = {
   initialOutput?: string,
   editorTheme?: ThemeOptions,
   viewerTheme?: ThemeOptions,
+  onEditorUpdate?: ({ currentTab, update }: { currentTab: string, update: ViewUpdate }) => void,
 }
 
 const filesForSandpack = (files: Record<string, string>): SandpackBundlerFiles => {
@@ -73,6 +81,10 @@ const getLanguageExtension = (language: Language): Extension => {
       // err I can't find the go package
       return rust();
     }
+    case Language.MaelstromGo: {
+      // err I can't find the go package
+      return rust();
+    }
     default:
       throw new Error(`Language ${language} not supported`);
   }
@@ -96,7 +108,7 @@ const onRunGenerator = (
   if (!languageInitializationResources.current) {
   }
 
-  console.log('2. onRunGenerator', languageInitializationResources.current);
+  // console.log('2. onRunGenerator', languageInitializationResources.current);
 
 
   return async (_event: MouseEvent) => {
@@ -107,7 +119,7 @@ const onRunGenerator = (
     switch (language) {
       case 'javascript': {
         const { client } = languageInitializationResources.current;
-        console.log('3. updating sandbox', filesRef.current);
+        // console.log('3. updating sandbox', filesRef.current);
         client.updateSandbox({
           files: filesForSandpack(filesRef.current),
         });
@@ -158,6 +170,29 @@ const onRunGenerator = (
         }
         break;
       }
+      case 'maelstrom_go': {
+        const runGoUrl = 'https://cryingpotat0--cannon-runners-run.modal.run';
+        const response = await fetch(runGoUrl, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            files: filesRef.current,
+            language: 'maelstrom_go',
+          }),
+        });
+
+        const reader = response.body?.getReader();
+        while (reader) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const text = new TextDecoder().decode(value);
+          setData(prevData => [...prevData, text]);
+        }
+        break;
+      }
       default:
         throw new Error(`Language ${language} not supported`);
     }
@@ -171,6 +206,7 @@ export function Cannon({
   initialOutput,
   editorTheme,
   viewerTheme,
+  onEditorUpdate,
 }: CannonProps) {
 
   editorTheme ??= solarizedLight;
@@ -195,10 +231,18 @@ export function Cannon({
           break;
         }
         case Language.Go: {
-          console.log('1. initializing go');
+          // console.log('1. initializing go');
           languageInitializationResources.current = {
             state: 'initialized',
             language: Language.Go,
+          };
+          break;
+        }
+        case Language.MaelstromGo: {
+          // console.log('1. initializing go');
+          languageInitializationResources.current = {
+            state: 'initialized',
+            language: Language.MaelstromGo,
           };
           break;
         }
@@ -228,7 +272,7 @@ export function Cannon({
             content,
             options)
           client.listen((msg) => {
-            console.log('update', client.status, msg);
+            // console.log('update', client.status, msg);
             if (msg.type === "console") {
               const logs = msg.log.flatMap(({ data }) => data + '\n');
               setData(prevData => [...prevData, ...logs]);
@@ -249,11 +293,11 @@ export function Cannon({
     })();
 
     return () => {
-      console.log('4. unmounting');
+      // console.log('4. unmounting');
       switch (languageInitializationResources.current?.language) {
         case Language.Javascript: {
           const { client } = languageInitializationResources.current;
-          console.log('5. destroying client', client);
+          // console.log('5. destroying client', client);
           client.destroy();
           break;
         }
@@ -266,9 +310,9 @@ export function Cannon({
   }, [languageProps]);
 
 
-  useEffect(() => {
-    console.log('languageInitializationResources changed', languageInitializationResources.current);
-  }, [languageProps]);
+  // useEffect(() => {
+  //   console.log('languageInitializationResources changed', languageInitializationResources.current);
+  // }, [languageProps]);
 
 
 
@@ -293,6 +337,7 @@ export function Cannon({
         files={files}
         setFiles={setFiles}
         extensions={editorExtensions}
+        onUpdate={onEditorUpdate}
       />
       <Terminal
         data={data}

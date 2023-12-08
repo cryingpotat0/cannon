@@ -13,10 +13,12 @@ function CodeEditor({
   files,
   setFiles,
   extensions,
+  onUpdate,
 }: {
   files: Record<string, string>,
   setFiles: Dispatch<SetStateAction<Record<string, string>>>,
   extensions?: Extension[],
+  onUpdate?: ({ currentTab, update }: { currentTab: string, update: ViewUpdate }) => void,
 }) {
 
   let editorEl = useRef<HTMLDivElement>(null);
@@ -79,7 +81,16 @@ function CodeEditor({
           tabs: Object.keys(files),
           activeTab,
         })
-      ].concat(extensions || [])
+      ]
+        .concat(onUpdate ? [
+          EditorView.updateListener.of((update: ViewUpdate) => {
+            onUpdate({
+              currentTab: activeTabRef.current,
+              update,
+            });
+          }),
+        ] : [])
+        .concat(extensions || [])
     });
     // @ts-ignore
     cmEditor.current = editor;
