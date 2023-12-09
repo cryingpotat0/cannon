@@ -247,7 +247,6 @@ export function Cannon({
           break;
         }
         case Language.Javascript: {
-
           const { iframe } = languageProps;
           if (!iframe) throw new Error('iframe not defined');
           const content: SandboxSetup = {
