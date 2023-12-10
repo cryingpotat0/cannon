@@ -28,6 +28,14 @@ function CodeEditor({
 
   useEffect(() => {
     activeTabRef.current = activeTab;
+    if (!cmEditor.current) return;
+    cmEditor.current.dispatch({
+      changes: {
+        from: 0,
+        to: cmEditor.current!.state.doc.length,
+        insert: files[activeTab],
+      }
+    });
   }, [activeTab]);
 
 
@@ -40,21 +48,23 @@ function CodeEditor({
       extentions: [
         basicSetup,
         keymap.of([indentWithTab]),
-        EditorView.updateListener.of(debounce((update: ViewUpdate) => {
+        EditorView.updateListener.of((update: ViewUpdate) => {
           // console.log('update', update);
           if (update.docChanged) {
             // setCode(update.view.state.doc.toString());
             // console.log('activeTabRef.current', activeTabRef.current);
-            // console.log('files', files);
+            const currentTab = activeTabRef.current.toString();
+            const currentCode = update.view.state.doc.toString();
+            // console.log('activeTabRef.current', currentTab, currentCode);
             // console.log('update.view.state.doc.toString()', update.view.state.doc.toString());
             setFiles((files) => {
               return {
                 ...files,
-                [activeTabRef.current]: update.view.state.doc.toString(),
+                [currentTab]: currentCode,
               };
             });
           }
-        }, 150)),
+        }),
         TabSwitcher({
           setActiveTab: (tab) => {
             // Since we debounce the update listener, we need to manually update the state.
@@ -68,14 +78,6 @@ function CodeEditor({
             // Finally set teh active tab. Do this at the end to avoid races.
             setActiveTab(tab);
 
-            // Update the text in the editor.
-            cmEditor.current!.dispatch({
-              changes: {
-                from: 0,
-                to: cmEditor.current!.state.doc.length,
-                insert: files[tab as string],
-              }
-            });
 
           },
           tabs: Object.keys(files),

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Cannon, Language, getTemplate } from '../lib/main';
+import "./App.css";
 
 // function App() {
 //   const { initialFiles, initialOutput } = getTemplate(Language.Rust);
@@ -42,12 +43,13 @@ function CannonInner({
 }: {
   iframe: HTMLIFrameElement
 }) {
-  const { initialFiles, initialOutput } = getTemplate(Language.Go);
+  const { initialFiles, initialOutput } = getTemplate(Language.Rust);
   return (
     <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
       <Cannon
         languageProps={{
-          language: Language.Go,
+          language: Language.Rust,
+          runnerUrl: 'https://cryingpotat0--cannon-runners-run-dev.modal.run',
           // iframe,
         }}
         initialFiles={initialFiles}

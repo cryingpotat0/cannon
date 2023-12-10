@@ -20,18 +20,23 @@ export enum Language {
 // DiscriminatedUnion for specific per language props.
 export type LanguageProps = {
   language: Language.Rust,
+  runnerUrl: string,
 } | {
   language: Language.Javascript,
   iframe: HTMLIFrameElement,
 } | {
   language: Language.Go,
+  runnerUrl: string,
 } | {
   language: Language.MaelstromGo,
+  runnerUrl: string,
 };
 
+// This duplication is ugly, figure out a better way to do this.
 type LanguageInitializationResources = {
   language: Language.Rust
   state: 'initialized',
+  runnerUrl: string,
 } | {
   language: Language.Javascript,
   client: SandpackClient
@@ -42,9 +47,11 @@ type LanguageInitializationResources = {
 } | {
   language: Language.Go,
   state: 'initialized',
+  runnerUrl: string,
 } | {
   language: Language.MaelstromGo,
   state: 'initialized',
+  runnerUrl: string,
 };
 
 
@@ -91,6 +98,42 @@ const getLanguageExtension = (language: Language): Extension => {
 }
 
 
+const startRunner = async ({
+  runnerUrl,
+  filesRef,
+  language,
+  setData,
+  onError,
+}: {
+  runnerUrl: string
+  filesRef: MutableRefObject<Record<string, string>>,
+  language: Language,
+  setData(value: SetStateAction<string[]>): void,
+  onError(error: any): void,
+}) => {
+  try {
+    const response = await fetch(runnerUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        files: filesRef.current,
+        language,
+      }),
+    });
+    const reader = response.body?.getReader();
+    while (reader) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const text = new TextDecoder().decode(value);
+      setData(prevData => [...prevData, text]);
+    }
+  } catch (error: any) {
+    onError(error);
+  }
+}
 
 const onRunGenerator = (
   {
@@ -125,72 +168,22 @@ const onRunGenerator = (
         });
         break;
       }
-      case 'rust': {
-        const runRustUrl = 'https://cryingpotat0--cannon-runners-run.modal.run';
-        const response = await fetch(runRustUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            files: filesRef.current,
-            language: 'rust',
-          }),
-        });
-        const reader = response.body?.getReader();
-        while (reader) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const text = new TextDecoder().decode(value);
-          setData(prevData => [...prevData, text]);
-        }
-        break;
-      }
+      // All server runners have similar logic.
+      case 'rust':
+      case 'maelstrom_go':
       case 'go': {
-        const runGoUrl = 'https://cryingpotat0--cannon-runners-run.modal.run';
-        const response = await fetch(runGoUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
+        const { runnerUrl } = languageInitializationResources.current;
+        // console.log('3. starting runner', runnerUrl, filesRef.current);
+        await startRunner({
+          runnerUrl,
+          filesRef,
+          language,
+          setData,
+          // TODO: better onerror handling
+          onError: (error) => {
+            setData([error.toString().split('\n')]);
           },
-          body: JSON.stringify({
-            files: filesRef.current,
-            language: 'go',
-          }),
         });
-
-        const reader = response.body?.getReader();
-        while (reader) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const text = new TextDecoder().decode(value);
-          setData(prevData => [...prevData, text]);
-        }
-        break;
-      }
-      case 'maelstrom_go': {
-        const runGoUrl = 'https://cryingpotat0--cannon-runners-run.modal.run';
-        const response = await fetch(runGoUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            files: filesRef.current,
-            language: 'maelstrom_go',
-          }),
-        });
-
-        const reader = response.body?.getReader();
-        while (reader) {
-          const { done, value } = await reader.read();
-          if (done) break;
-
-          const text = new TextDecoder().decode(value);
-          setData(prevData => [...prevData, text]);
-        }
         break;
       }
       default:
@@ -225,22 +218,23 @@ export function Cannon({
       switch (language) {
         case Language.Rust: {
           languageInitializationResources.current = {
+            runnerUrl: languageProps.runnerUrl,
             state: 'initialized',
             language: Language.Rust,
           };
           break;
         }
         case Language.Go: {
-          // console.log('1. initializing go');
           languageInitializationResources.current = {
+            runnerUrl: languageProps.runnerUrl,
             state: 'initialized',
             language: Language.Go,
           };
           break;
         }
         case Language.MaelstromGo: {
-          // console.log('1. initializing go');
           languageInitializationResources.current = {
+            runnerUrl: languageProps.runnerUrl,
             state: 'initialized',
             language: Language.MaelstromGo,
           };
@@ -324,6 +318,7 @@ export function Cannon({
 
   useEffect(() => {
     filesRef.current = files;
+    // console.log('files changed', files);
   }, [files]);
 
 

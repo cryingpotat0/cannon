@@ -98,6 +98,7 @@ def run(item: Input, request: Request):
             workdir="/sandbox",
             mounts=[modal.Mount.from_local_dir(root, remote_path="/sandbox")],
             image=image,
+            cpu=1,
         )
     sb.wait()
     print(f"Finished running {item.command} in {image} with exit code {sb.returncode}")

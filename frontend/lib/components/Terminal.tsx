@@ -127,9 +127,13 @@ function Terminal({
           from: 0,
           to: cmEditor.current.state.doc.length,
           insert: text
-        }
+        },
       }
     );
+    cmEditor.current.scrollDOM.scrollTo({
+      top: cmEditor.current.scrollDOM.scrollHeight,
+      left: 0,
+    });
   }, [text]);
 
   useEffect(() => {
