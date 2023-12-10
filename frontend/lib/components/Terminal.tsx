@@ -61,19 +61,29 @@ function stderrHighlight() {
   });
 }
 
+export type TerminalConfig = {
+  hideStderr?: boolean,
+}
 
 function Terminal({
   data,
   extensions,
   onRun,
   isLoading,
+  config,
 }: {
   data: string[],
   extensions: Extension[],
   onRun: MouseEventHandler<HTMLButtonElement>,
-  isLoading: boolean;
+  isLoading: boolean,
+  config?: TerminalConfig,
 }) {
-  const text = data.join('');
+  let text = data.join('');
+  if (config?.hideStderr) {
+    const lines = text.split('\n');
+    const filteredLines = lines.filter(line => !line.startsWith('stderr:'));
+    text = filteredLines.join('\n');
+  }
   // If lines start with stderr, make them red.
   // Start all lines with a $.
   // If lines start with stdout, make them green.

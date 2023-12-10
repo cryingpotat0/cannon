@@ -2,7 +2,6 @@ import CodeMirror from './codemirror';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 
 import { EditorView, ViewUpdate } from '@codemirror/view';
-import debounce from "lodash.debounce";
 import { Extension } from '@codemirror/state';
 import { basicSetup } from 'codemirror';
 import { keymap } from "@codemirror/view";

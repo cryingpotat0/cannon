@@ -1,5 +1,5 @@
 import CodeEditor from './CodeEditor';
-import Terminal from './Terminal';
+import Terminal, { TerminalConfig } from './Terminal';
 
 import { ViewUpdate } from '@codemirror/view';
 import { useState, MouseEvent, useEffect, useRef, Dispatch, SetStateAction, MutableRefObject } from 'react';
@@ -62,7 +62,9 @@ export type CannonProps = {
   editorTheme?: ThemeOptions,
   viewerTheme?: ThemeOptions,
   onEditorUpdate?: ({ currentTab, update }: { currentTab: string, update: ViewUpdate }) => void,
+  terminalConfig?: TerminalConfig,
 }
+
 
 const filesForSandpack = (files: Record<string, string>): SandpackBundlerFiles => {
   return Object.entries(files).reduce((acc, [key, value]) => {
@@ -200,6 +202,7 @@ export function Cannon({
   editorTheme,
   viewerTheme,
   onEditorUpdate,
+  terminalConfig,
 }: CannonProps) {
 
   editorTheme ??= solarizedLight;
@@ -338,6 +341,7 @@ export function Cannon({
         extensions={viewerExtensions}
         onRun={onRun}
         isLoading={isLoading}
+        config={terminalConfig}
       />
     </>
   )

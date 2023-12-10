@@ -12,3 +12,4 @@
 - Better themes generally
 - Scoped styles
 - Other language support
+- Request caching + cache invalidation

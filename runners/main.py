@@ -7,7 +7,7 @@ import modal
 import os
 from time import time
 
-from interface import Runner, RunnerType, Input
+from interface import Runner, RunnerType, Input, get_unique_str_from_input
 from go import GoRunner
 from maelstrom_go import MaelstromGoRunner
 from rust import RustRunner
@@ -16,6 +16,8 @@ from collections import deque
 MAX_REQUESTS_PER_MINUTE = 5
 stub = Stub("cannon_runners")
 stub.rate_limiter = modal.Dict.new()
+# This is unbounded in size for now, but 🤷.
+stub.request_cache = modal.Dict.new()
 
 def get_language_runner(lang: RunnerType) -> Runner:
     if lang == RunnerType.RUST:
@@ -40,6 +42,8 @@ def rate_limiter(request: Request):
         shared_dict[ip_address] = deque(maxlen=MAX_REQUESTS_PER_MINUTE) # type: ignore
 
     current_deque = shared_dict[ip_address]
+    if current_deque.maxlen != MAX_REQUESTS_PER_MINUTE:
+        current_deque = deque(current_deque, maxlen=MAX_REQUESTS_PER_MINUTE)
     allowed, new_deque = rate_limiter_internal(ip_address, current_deque)
     shared_dict[ip_address] = new_deque
     return allowed
@@ -61,12 +65,16 @@ def rate_limiter_internal(ip_address, current_deque) -> Tuple[bool, deque]:
 
     return (False, current_deque)
 
+# TODO: make this stream for real when sandboxes support streaming.
+def fake_stream(stderr, stdout):
+    for line in stderr:
+        yield line
+    for line in stdout:
+        yield line
+
 @stub.function(keep_warm=1, allow_concurrent_inputs=5)
 @web_endpoint(method="POST")
 def run(item: Input, request: Request):
-    if not rate_limiter(request):
-        print("Too many requests")
-        raise HTTPException(status_code=429, detail="Too many requests")
 
     print(f"Received {item}") 
     runner = get_language_runner(item.language)
@@ -75,6 +83,19 @@ def run(item: Input, request: Request):
         item.files = runner.get_default_files()
     if not item.command:
         item.command = runner.get_default_command()
+
+    item_unique_str = get_unique_str_from_input(item)
+    try:
+        (stderr, stdout) = stub.request_cache[item_unique_str] # type: ignore
+        print(f"Found cached result for {item_unique_str}")
+        return StreamingResponse(fake_stream(stderr, stdout))
+    except KeyError:
+        pass
+
+    if not rate_limiter(request):
+        print("Too many requests")
+        raise HTTPException(status_code=429, detail="Too many requests")
+
 
     # TODO: evaluate the security risk here, i couldn't get the NFS to work yet.
     # Create a temp directory
@@ -106,12 +127,6 @@ def run(item: Input, request: Request):
     stderr = [f"stderr: {l}\n" for l in sb.stderr.read().split('\n') if l]
     stdout = [f"stdout: {l}\n" for l in sb.stdout.read().split('\n') if l]
 
-    # TODO: make this stream for real when sandboxes support streaming.
-    def fake_stream(stderr, stdout):
-        for line in stderr:
-            yield line
-        for line in stdout:
-            yield line
-
+    stub.request_cache[item_unique_str] = (stderr, stdout) # type: ignore
     return StreamingResponse(fake_stream(stderr, stdout))
 
