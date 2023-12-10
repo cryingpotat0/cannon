@@ -8,4 +8,3 @@
 - Better themes generally
 - Scoped styles
 - Other language support
-- 
