@@ -1,3 +1,4 @@
+from typing import OrderedDict
 from interface import RunnerType, Runner
 from modal import Image
 
@@ -12,8 +13,8 @@ class RustRunner(Runner):
                 add_python="3.11",
             )
 
-    def get_default_files(self) -> dict[str, str]:
-        return {
+    def get_default_files(self) -> OrderedDict[str, str]:
+        return OrderedDict({
         "Cargo.toml": """
 [package]
 name = "hello-world"
@@ -35,8 +36,8 @@ fn main() {
     println!("Hello, world4 {:?}!", map);
 }
 """,
-        }
+        })
 
-    def get_default_command(self) -> str:
-        return "cargo run"
+    def get_default_command(self) -> list[str]:
+        return ["cargo run"]
 

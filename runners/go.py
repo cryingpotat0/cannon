@@ -1,3 +1,4 @@
+from typing import OrderedDict
 from interface import RunnerType, Runner
 from modal import Image
 
@@ -11,8 +12,8 @@ class GoRunner(Runner):
                 add_python="3.11",
             )
 
-    def get_default_files(self) -> dict[str, str]:
-        return {
+    def get_default_files(self) -> OrderedDict[str, str]:
+        return OrderedDict({
         "main.go": """
 package main
 
@@ -32,8 +33,8 @@ go 1.18
 
 require github.com/google/uuid v1.3.0
 """,
-        }
+        })
 
-    def get_default_command(self) -> str:
-        return "go mod tidy && go run main.go"
+    def get_default_command(self) -> list[str]:
+        return ["go mod tidy", "go run main.go"]
 

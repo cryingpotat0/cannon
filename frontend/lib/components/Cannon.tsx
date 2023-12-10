@@ -118,6 +118,8 @@ const startRunner = async ({
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        // TODO: remove/ parametrize. disables the modal cache.
+        'Cache-Control': 'no-cache',
       },
       body: JSON.stringify({
         files: filesRef.current,

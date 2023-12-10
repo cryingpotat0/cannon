@@ -43,41 +43,15 @@ function CannonInner({
 }: {
   iframe: HTMLIFrameElement
 }) {
-  // const { initialFiles, initialOutput } = getTemplate(Language.Rust);
+  const { initialFiles, initialOutput } = getTemplate(Language.MaelstromGo);
   return (
     <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
       <Cannon
-        initialFiles={{
-          "src/main.rs": `use dynomite::{Item, Attributes};
-
-#[derive(Item)]
-struct Order {
-  #[dynomite(partition_key)]
-  pk: String,
-  quantity: u16
-}
-
-fn main() {
-    let item: Attributes = Order {
-      pk: "pk".to_string(),
-      quantity: 4
-    }.into();
-    println!("{:#?}", item);
-}
-`,
-          "Cargo.toml": `[package]
-name = "hello-world"
-version = "0.1.0"
-edition = "2021"
-
-[dependencies]
-dynomite = "0.10"
-`,
-        }}
-        initialOutput=""
+        initialFiles={initialFiles}
+        initialOutput={initialOutput}
         languageProps={{
-          language: Language.Rust,
-          runnerUrl: 'https://cryingpotat0--cannon-runners-run.modal.run',
+          language: Language.MaelstromGo,
+          runnerUrl: 'https://cryingpotat0--cannon-runners-run-dev.modal.run',
         }}
         terminalConfig={{
           hideStderr: true,

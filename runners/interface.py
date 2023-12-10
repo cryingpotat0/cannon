@@ -1,6 +1,6 @@
 from enum import Enum
+from typing import OrderedDict
 from pydantic import BaseModel
-from functools import cached_property
 from abc import ABC, abstractmethod
 from modal import Image
 import json
@@ -12,19 +12,21 @@ class RunnerType(Enum):
     MAELSTROM_GO = "maelstrom_go"
 
 class Input(BaseModel):
-    files: dict[str, str] = {}
+    files: OrderedDict[str, str] = OrderedDict()
     command: str = ""
     language: RunnerType = RunnerType.RUST
 
 def get_unique_str_from_input(input: Input) -> str:
-    file_to_sha1 = {}
-    for filename, contents in sorted(input.files.items()):
-        file_to_sha1[filename] = hashlib.sha1(bytes(contents, 'utf-8')).hexdigest()
+    file_to_sha1 = []
+    for filename, contents in input.files.items():
+        file_to_sha1.append([(filename, hashlib.sha1(bytes(contents, 'utf-8')).hexdigest())])
     return json.dumps({
         "command": input.command,
         "files": file_to_sha1,
         "language": input.language.value
     }, sort_keys=True)
+
+SANDBOX_DIR = "/sandbox"
 
 
 class Runner(ABC):
@@ -37,9 +39,9 @@ class Runner(ABC):
         pass
 
     @abstractmethod
-    def get_default_files(self) -> dict[str, str]:
+    def get_default_files(self) -> OrderedDict[str, str]:
         pass
 
     @abstractmethod
-    def get_default_command(self) -> str:
+    def get_default_command(self) -> list[str]:
         pass

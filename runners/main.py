@@ -7,7 +7,7 @@ import modal
 import os
 from time import time
 
-from interface import Runner, RunnerType, Input, get_unique_str_from_input
+from interface import SANDBOX_DIR, Runner, RunnerType, Input, get_unique_str_from_input
 from go import GoRunner
 from maelstrom_go import MaelstromGoRunner
 from rust import RustRunner
@@ -44,11 +44,11 @@ def rate_limiter(request: Request):
     current_deque = shared_dict[ip_address]
     if current_deque.maxlen != MAX_REQUESTS_PER_MINUTE:
         current_deque = deque(current_deque, maxlen=MAX_REQUESTS_PER_MINUTE)
-    allowed, new_deque = rate_limiter_internal(ip_address, current_deque)
+    allowed, new_deque = rate_limiter_internal(current_deque)
     shared_dict[ip_address] = new_deque
     return allowed
 
-def rate_limiter_internal(ip_address, current_deque) -> Tuple[bool, deque]:
+def rate_limiter_internal(current_deque) -> Tuple[bool, deque]:
     print(f"Current deque: {current_deque}")
     current_time = time()
     one_minute_ago = current_time - 60
@@ -65,6 +65,22 @@ def rate_limiter_internal(ip_address, current_deque) -> Tuple[bool, deque]:
 
     return (False, current_deque)
 
+def get_response_from_cache(item: Input, request: Request) -> Tuple[str, StreamingResponse | None]:
+
+    item_unique_str = get_unique_str_from_input(item)
+
+    # Check if Cache-Ignore is set
+    if request.headers.get("Cache-Control") == "no-cache":
+        print("Cache-Ignore set, not using cache")
+        return item_unique_str, None
+    try:
+        (stderr, stdout) = stub.request_cache[item_unique_str] # type: ignore
+        print(f"Found cached result for {item_unique_str}")
+        return item_unique_str, StreamingResponse(fake_stream(stderr, stdout))
+    except KeyError:
+        pass
+    return item_unique_str, None
+
 # TODO: make this stream for real when sandboxes support streaming.
 def fake_stream(stderr, stdout):
     for line in stderr:
@@ -75,27 +91,21 @@ def fake_stream(stderr, stdout):
 @stub.function(keep_warm=1, allow_concurrent_inputs=5)
 @web_endpoint(method="POST")
 def run(item: Input, request: Request):
-
     print(f"Received {item}") 
     runner = get_language_runner(item.language)
 
     if not item.files:
         item.files = runner.get_default_files()
     if not item.command:
-        item.command = runner.get_default_command()
+        item.command = " && ".join(runner.get_default_command())
 
-    item_unique_str = get_unique_str_from_input(item)
-    try:
-        (stderr, stdout) = stub.request_cache[item_unique_str] # type: ignore
-        print(f"Found cached result for {item_unique_str}")
-        return StreamingResponse(fake_stream(stderr, stdout))
-    except KeyError:
-        pass
+    (item_unique_str, cached_response) = get_response_from_cache(item, request)
+    if cached_response:
+        return cached_response
 
     if not rate_limiter(request):
         print("Too many requests")
         raise HTTPException(status_code=429, detail="Too many requests")
-
 
     # TODO: evaluate the security risk here, i couldn't get the NFS to work yet.
     # Create a temp directory
@@ -116,8 +126,8 @@ def run(item: Input, request: Request):
             "-c",
             item.command,
             timeout=60,
-            workdir="/sandbox",
-            mounts=[modal.Mount.from_local_dir(root, remote_path="/sandbox")],
+            workdir=SANDBOX_DIR,
+            mounts=[modal.Mount.from_local_dir(root, remote_path=SANDBOX_DIR)],
             image=image,
             cpu=1,
         )
