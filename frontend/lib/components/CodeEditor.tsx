@@ -1,5 +1,5 @@
 import CodeMirror from './codemirror';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { EditorView, ViewUpdate } from '@codemirror/view';
 import { Extension } from '@codemirror/state';
@@ -30,9 +30,14 @@ function CodeEditor({
     },
   } = useCannon();
 
+  const [currentText, setCurrentText] = useState<string>(files[activeFile]);
 
-
-
+  // React is hilarious. To make this work I have to do:
+  // When a tab is clicked, update "activeFile"
+  // When "activeFile" changes, update the editor
+  // When the editor updates, update "currentText"
+  // When "currentText" changes, update the file
+  // I guess this is what happens when you mix a ref with a state variable.
   useEffect(() => {
     if (!cmEditor.current) return;
     cmEditor.current.dispatch({
@@ -43,6 +48,14 @@ function CodeEditor({
       }
     });
   }, [activeFile]);
+
+  useEffect(() => {
+    if (!cmEditor.current) return;
+    updateFile({
+      fileName: activeFile,
+      content: currentText,
+    });
+  }, [currentText]);
 
 
   useEffect(() => {
@@ -57,16 +70,17 @@ function CodeEditor({
         EditorView.updateListener.of((update: ViewUpdate) => {
           // console.log('update', update);
           if (update.docChanged) {
+            setCurrentText(update.view.state.doc.toString());
             // setCode(update.view.state.doc.toString());
             // console.log('activeTabRef.current', activeTabRef.current);
-            const currentTab = activeFile.toString();
-            const currentCode = update.view.state.doc.toString();
-            // console.log('activeTabRef.current', currentTab, currentCode);
-            // console.log('update.view.state.doc.toString()', update.view.state.doc.toString());
-            updateFile({
-              fileName: currentTab,
-              content: currentCode
-            })
+            // const currentTab = activeFile.toString();
+            // const currentCode = update.view.state.doc.toString();
+            // // console.log('activeTabRef.current', currentTab, currentCode);
+            // // console.log('update.view.state.doc.toString()', update.view.state.doc.toString());
+            // updateFile({
+            //   fileName: currentTab,
+            //   content: currentCode
+            // })
           }
         }),
         TabSwitcher({

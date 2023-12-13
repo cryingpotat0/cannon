@@ -11,13 +11,8 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
   output: initialOutput,
 }: CannonProviderProps) => {
   const [runner, setRunner] = useState<RunnerInformation | undefined>(undefined);
-  // const runner = useRef<RunnerInformation | undefined>(_runner);
   const [cannonStatus, setCannonStatus] = useState<CannonStatus>(CannonStatus.Unintialized);
-  // const cannonStatus = useRef<CannonStatus>(_cannonStatus);
   const [output, setOutput] = useState<string>(initialOutput || "");
-  // const output = useRef<string>(_output);
-
-
   const [files, setFiles] = useState<Record<string, string>>(initialFiles);
   const [activeFile, setActiveFile] = useState<string>(Object.keys(files)[0]);
 
@@ -29,7 +24,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
       case Language.Rust:
       case Language.Go:
       case Language.MaelstromGo:
-        console.log('setting runner');
         const { runnerUrl, command } = languageProps;
         setCannonStatus(CannonStatus.Ready)
         setRunner({
@@ -115,7 +109,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
 
   useEffect(() => {
     if (cannonStatus !== CannonStatus.Running) return;
-    console.log('Running post run effect', cannonStatus);
     const postRunEffect = async () => {
       setOutput("");
       if (!runner) throw new Error('No runner');
@@ -183,7 +176,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
 
         run(): void {
           setCannonStatus(cannonStatus => {
-            console.log('some mofo calling me');
             if (cannonStatus === CannonStatus.Running) throw new Error('Already running');
             return CannonStatus.Running;
           });
