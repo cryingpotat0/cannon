@@ -17,7 +17,7 @@ export type CannonContextType = {
   commands: {
     updateFile: (args: { fileName: string, content: string }) => void;
     updateActiveFile: (args: { fileName: string }) => void;
-    run(): Promise<void>;
+    run(): void;
   },
 }
 
