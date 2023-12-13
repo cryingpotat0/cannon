@@ -1,10 +1,12 @@
-import { MouseEventHandler, useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import { EditorState, Extension, RangeSetBuilder, StateEffect, StateEffectType, StateField } from "@codemirror/state";
 import { EditorView, Decoration, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import CodeMirror from './codemirror';
 import { minimalSetup } from 'codemirror';
 import TerminalBanner from './TerminalBanner';
+import { CannonStatus, TerminalConfig } from './types';
+import { useCannon } from './context';
 
 
 class EmptyWidget extends WidgetType {
@@ -61,32 +63,31 @@ function stderrHighlight() {
   });
 }
 
-export type TerminalConfig = {
-  hideStderr?: boolean,
-}
 
 function Terminal({
-  data,
   extensions,
-  onRun,
-  isLoading,
   config,
 }: {
-  data: string[],
   extensions: Extension[],
-  onRun: MouseEventHandler<HTMLButtonElement>,
-  isLoading: boolean,
   config?: TerminalConfig,
 }) {
-  let text = data.join('');
+  const {
+    output,
+    cannonStatus,
+    commands: {
+      run,
+    },
+  } = useCannon();
+
+  let text = output;
+
   if (config?.hideStderr) {
     const lines = text.split('\n');
     const filteredLines = lines.filter(line => !line.startsWith('stderr:'));
     text = filteredLines.join('\n');
   }
-  // If lines start with stderr, make them red.
-  // Start all lines with a $.
-  // If lines start with stdout, make them green.
+  config?.onTerminalUpdate?.({ text });
+
 
   let editorEl = useRef<HTMLDivElement>(null);
   let cmEditor = useRef<EditorView>(null);
@@ -119,7 +120,7 @@ function Terminal({
         EditorView.editable.of(false),
         EditorState.readOnly.of(true),
         TerminalBanner({
-          onRun,
+          onRun: run,
           toggleLoading
         }),
       ].concat(extensions),
@@ -137,6 +138,7 @@ function Terminal({
           from: 0,
           to: cmEditor.current.state.doc.length,
           insert: text
+
         },
       }
     );
@@ -150,11 +152,11 @@ function Terminal({
     if (!cmEditor.current) return;
     cmEditor.current.dispatch(
       {
-        effects: toggleLoadingRef.current!.of(isLoading),
+        effects: toggleLoadingRef.current!.of(cannonStatus === CannonStatus.Running),
       }
     );
 
-  }, [isLoading]);
+  }, [cannonStatus]);
 
 
   return (

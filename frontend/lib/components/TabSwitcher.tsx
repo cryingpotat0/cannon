@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import { EditorView, Panel, showPanel } from '@codemirror/view';
 import { createRoot } from 'react-dom/client';
 
@@ -7,7 +7,7 @@ const TabSwitcher = (
     setActiveTab,
     tabs,
     activeTab
-  }: { setActiveTab: Dispatch<SetStateAction<string>>, tabs: string[], activeTab: string }
+  }: { setActiveTab: (tab: string) => void, tabs: string[], activeTab: string }
 ) => {
   let [internalActiveTab, setInternalActiveTab] = useState(activeTab);
   return (
@@ -46,7 +46,7 @@ function headerPanelGenerator({
   setActiveTab,
   tabs,
   activeTab
-}: { setActiveTab: Dispatch<SetStateAction<string>>, tabs: string[], activeTab: string }) {
+}: { setActiveTab: (tab: string) => void, tabs: string[], activeTab: string }) {
   return function headerPanel(_view: EditorView): Panel {
     let dom = document.createElement("div")
     let root = createRoot(dom);
@@ -60,7 +60,7 @@ function headerPanelGenerator({
 
 
 export default function header(
-  args: { setActiveTab: Dispatch<SetStateAction<string>>, tabs: string[], activeTab: string }
+  args: { setActiveTab: (tab: string) => void, tabs: string[], activeTab: string }
 ) {
   return showPanel.of(headerPanelGenerator(args))
 }

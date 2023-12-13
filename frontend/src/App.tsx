@@ -47,11 +47,11 @@ function CannonInner({
   return (
     <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
       <Cannon
-        initialFiles={initialFiles}
-        initialOutput={initialOutput}
+        files={initialFiles}
+        output={initialOutput}
         languageProps={{
           language: Language.MaelstromGo,
-          runnerUrl: 'https://cryingpotat0--cannon-runners-run-dev.modal.run',
+          runnerUrl: 'https://cryingpotat0--cannon-runners-run.modal.run',
         }}
         terminalConfig={{
           hideStderr: true,

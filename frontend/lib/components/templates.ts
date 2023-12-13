@@ -1,4 +1,4 @@
-import { Language } from "./Cannon"
+import { Language } from "./types"
 
 export type Template = {
   initialFiles: Record<string, string>,
