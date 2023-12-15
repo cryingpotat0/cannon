@@ -41,7 +41,7 @@ export type FileData = {
 export type CannonProviderProps = {
   languageProps: LanguageProps,
   files: Record<string, string>,
-  children: React.ReactNode,
+  children?: React.ReactNode,
   output?: string,
 }
 

@@ -125,7 +125,7 @@ def run(item: Input, request: Request):
             "sh",
             "-c",
             item.command,
-            timeout=60,
+            timeout=100,
             workdir=SANDBOX_DIR,
             mounts=[modal.Mount.from_local_dir(root, remote_path=SANDBOX_DIR)],
             image=image,
