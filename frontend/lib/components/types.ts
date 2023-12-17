@@ -50,6 +50,13 @@ export type LanguageProps = {
   language: Language.Rust | Language.Go | Language.MaelstromGo,
   runnerUrl: string,
   command?: string,
+  options?: {
+    imageBuilder?: {
+      files: Record<string, string>,
+      command?: string,
+    },
+    disableCache?: boolean,
+  },
 } | {
   language: Language.Javascript,
   iframe: HTMLIFrameElement,
@@ -60,6 +67,13 @@ export type RunnerInformation = {
   language: Language.Rust | Language.Go | Language.MaelstromGo,
   runnerUrl: string,
   command?: string,
+  options?: {
+    imageBuilder?: {
+      files: Record<string, string>,
+      command?: string,
+    },
+    disableCache?: boolean,
+  },
 } | {
   language: Language.Javascript,
   client: SandpackClient,

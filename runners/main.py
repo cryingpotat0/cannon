@@ -10,6 +10,7 @@ from time import time
 from interface import SANDBOX_DIR, Runner, RunnerType, Input, get_unique_str_from_input
 from go import GoRunner
 from maelstrom_go import MaelstromGoRunner
+from utils import write_files
 from rust import RustRunner
 from collections import deque
 
@@ -18,6 +19,7 @@ stub = Stub("cannon_runners")
 stub.rate_limiter = modal.Dict.new()
 # This is unbounded in size for now, but 🤷.
 stub.request_cache = modal.Dict.new()
+stub.build_registry = modal.Dict.new()
 
 def get_language_runner(lang: RunnerType) -> Runner:
     if lang == RunnerType.RUST:
@@ -67,7 +69,9 @@ def rate_limiter_internal(current_deque) -> Tuple[bool, deque]:
 
 def get_response_from_cache(item: Input, request: Request) -> Tuple[str, StreamingResponse | None]:
 
-    item_unique_str = get_unique_str_from_input(item)
+    item_unique_str = get_unique_str_from_input(
+            item.files, item.command, item.language
+            )
 
     # Check if Cache-Ignore is set
     if request.headers.get("Cache-Control") == "no-cache":
@@ -108,18 +112,12 @@ def run(item: Input, request: Request):
         raise HTTPException(status_code=429, detail="Too many requests")
 
     # TODO: evaluate the security risk here, i couldn't get the NFS to work yet.
-    # Create a temp directory
+    # Create a temp directory and write files.
     root = "./app"
-    # Create files in the temp directory
-    for name, content in item.files.items():
-        directory = f"{root}/{os.path.dirname(name)}"
-        file_name = os.path.basename(name)
-        os.makedirs(directory, exist_ok=True)
-        with open(f"{directory}/{file_name}", "w") as f:
-            f.write(content)
+    write_files(root, item.files)
 
-    image = runner.get_image()
-    print(f"Running {item.command} in {image}")
+    image_unique_str, image = runner.get_custom_image(stub.build_registry, item.image_build_args)
+    print(f"Running {item.command} in {image.object_id}")
 
     sb = stub.spawn_sandbox(
             "sh",
@@ -131,8 +129,16 @@ def run(item: Input, request: Request):
             image=image,
             cpu=1,
         )
+    
     sb.wait()
-    print(f"Finished running {item.command} in {image} with exit code {sb.returncode}")
+    print(f"Finished running {item.command} in {image.object_id} with exit code {sb.returncode}")
+
+    # TODO: today we have to set the image_id for custom images after the
+    # stub is run so the image actually has an ID. This is a weird
+    # abstraction currently, figure out how to make it better.
+    if image_unique_str:
+        print(f"Setting image ID {image.object_id} for {image_unique_str}")
+        stub.build_registry[image_unique_str] = image.object_id # type: ignore
 
     stderr = [f"stderr: {l}\n" for l in sb.stderr.read().split('\n') if l]
     stdout = [f"stdout: {l}\n" for l in sb.stdout.read().split('\n') if l]

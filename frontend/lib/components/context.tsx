@@ -24,12 +24,14 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
       case Language.Rust:
       case Language.Go:
       case Language.MaelstromGo:
-        const { runnerUrl, command } = languageProps;
+        const { runnerUrl, command, options } = languageProps;
         setCannonStatus(CannonStatus.Ready)
+        console.log('setting runner options to', options);
         setRunner({
           language,
           runnerUrl,
           command,
+          options,
         });
         break;
       case Language.Javascript:
@@ -117,20 +119,30 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         case Language.Rust:
         case Language.Go:
         case Language.MaelstromGo:
-          const { runnerUrl, command } = runner;
+          const { runnerUrl, command, options } = runner;
+          console.log('using runner options ', options);
           try {
+            const headers: Headers = new Headers();
+            headers.append('Accept', 'application/json');
+            headers.append('Content-Type', 'application/json');
+            if (options?.disableCache) {
+              headers.append('Cache-Control', 'no-cache');
+            }
+
+            // TODO: statically match this type to the runner input type using openapi.
+            const requestBody: any = {
+              files,
+              command,
+              language,
+            };
+            if (options?.imageBuilder) {
+              requestBody.image_build_args = options.imageBuilder;
+            }
+
             const response = await fetch(runnerUrl, {
               method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                // TODO: remove disables the modal cache.
-                // 'Cache-Control': 'no-cache',
-              },
-              body: JSON.stringify({
-                files,
-                command,
-                language,
-              }),
+              headers,
+              body: JSON.stringify(requestBody),
             });
             const reader = response.body?.getReader();
             while (reader) {

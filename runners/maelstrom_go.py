@@ -3,6 +3,8 @@ from interface import SANDBOX_DIR, RunnerType, Runner
 from modal import Image, Stub
 import os
 
+from utils import write_files
+
 class MaelstromGoRunner(Runner):
     def get_lang(self) -> RunnerType:
         return RunnerType.MAELSTROM_GO
@@ -13,12 +15,7 @@ class MaelstromGoRunner(Runner):
         # TODO: how do I get the same thing without writing to
         # disk for every request?
         root = "/image-builder"
-        for name, content in self.get_default_files().items():
-            directory = f"{root}/{os.path.dirname(name)}"
-            file_name = os.path.basename(name)
-            os.makedirs(directory, exist_ok=True)
-            with open(f"{directory}/{file_name}", "w") as f:
-                f.write(content)
+        write_files(root, self.get_default_files())
 
         return Image.from_registry(
                 "eclipse-temurin:17-jdk",
