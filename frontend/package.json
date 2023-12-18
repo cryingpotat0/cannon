@@ -1,6 +1,6 @@
 {
   "name": "cannon-codeeditor",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "type": "module",
   "files": [
     "dist"
@@ -9,7 +9,7 @@
   "types": "dist/main.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --p ./tsconfig-build.json && vite build --watch",
+    "build": "tsc --p ./tsconfig-build.json && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "prepublishOnly": "npm run build"
