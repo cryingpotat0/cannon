@@ -13,7 +13,17 @@ export default defineConfig({
     react(),
     // Figure out how to make this work with Astro first. Until then imports are separate.
     // libInjectCss(),
-    dts({ include: ['lib'] })
+    dts({ include: ['lib'] }),
+    {
+      name: "isolation",
+      configureServer(server) {
+        server.middlewares.use((_req, res, next) => {
+          res.setHeader("Cross-Origin-Opener-Policy", "same-origin");
+          res.setHeader("Cross-Origin-Embedder-Policy", "require-corp");
+          next();
+        });
+      },
+    },
   ],
   build: {
     copyPublicDir: false,

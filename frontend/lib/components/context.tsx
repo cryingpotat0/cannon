@@ -1,25 +1,30 @@
 import { useState, createContext, useEffect, useContext, } from 'react';
 import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus } from './types';
 import { SandboxSetup, loadSandpackClient } from '@codesandbox/sandpack-client';
+import { WebContainer } from "@webcontainer/api";
+import { filesToWebcontainerFiles } from './webcontainer_utils';
 
 const Cannon = createContext<CannonContextType | null>(null);
 
 export const CannonProvider: React.FC<CannonProviderProps> = ({
-  languageProps,
+  languageProps: initialLanguageProps,
   children,
   files: initialFiles,
   output: initialOutput,
+  onRun,
 }: CannonProviderProps) => {
   const [runner, setRunner] = useState<RunnerInformation | undefined>(undefined);
   const [cannonStatus, setCannonStatus] = useState<CannonStatus>(CannonStatus.Unintialized);
   const [output, setOutput] = useState<string>(initialOutput || "");
   const [files, setFiles] = useState<Record<string, string>>(initialFiles);
   const [activeFile, setActiveFile] = useState<string>(Object.keys(files)[0]);
+  const [languageProps, setLanguageProps] = useState(initialLanguageProps);
 
   useEffect(() => {
     if (cannonStatus !== CannonStatus.Unintialized) return;
     const { language } = languageProps;
     let destroyed = false;
+    let webcontainerInstance: WebContainer | undefined = undefined;
     switch (language) {
       case Language.Rust:
       case Language.Go:
@@ -36,6 +41,10 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         break;
       case Language.Javascript:
         const { iframe } = languageProps;
+        if (!iframe) {
+          // Language props will be updated when the iframe is ready.
+          return;
+        }
         (async () => {
           const content: SandboxSetup = {
             entry: "/index.js",
@@ -72,13 +81,75 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
               language,
               client,
             });
+          } else {
+            // destroy the client if we're no longer using it.
+            client.destroy();
           }
         })();
+        break;
+      case Language.JavascriptWebContainer:
+        (async () => {
+          if (!webcontainerInstance) {
+            try {
+              webcontainerInstance = await WebContainer.boot();
+            } catch (e) {
+              console.error('Unable to boot webcontainer', e);
+              return;
+            }
+          }
+          const webcontainerFiles = filesToWebcontainerFiles(files);
+          await webcontainerInstance?.mount(webcontainerFiles);
+          const installProcess = await webcontainerInstance?.spawn('npm', ['install']);
+          installProcess.output.pipeTo(new WritableStream({
+            write(text) {
+              setOutput(prevOutput => `${prevOutput}${text}`);
+            }
+          }));
+          const installExitCode = await installProcess.exit;
+          const { iframe } = languageProps;
+
+          if (installExitCode !== 0) {
+            throw new Error(`Unable to run npm install ${output}`);
+          }
+
+          const startProcess = await webcontainerInstance.spawn('npm', ['run', 'start']);
+          startProcess.output.pipeTo(new WritableStream({
+            write(text) {
+              console.log('got text', text);
+              setOutput(prevOutput => `${prevOutput}${text}`);
+            }
+          }));
+
+          webcontainerInstance.on('error', (err) => {
+            console.error('webcontainer error', err);
+          });
+          webcontainerInstance.on('server-ready', (port, url) => {
+            console.log(`Server ready on port ${port} and url ${url}`);
+            if (iframe) {
+              console.log('setting iframe src to ', url);
+              iframe.src = url;
+            }
+          });
+
+          if (!destroyed && cannonStatus === CannonStatus.Unintialized) {
+            setCannonStatus(CannonStatus.Ready)
+            setRunner({
+              language,
+              client: webcontainerInstance,
+            });
+          } else {
+          }
+        })();
+        break;
     }
     return () => {
       destroyed = true;
+      if (webcontainerInstance) {
+        // webcontainerInstance.teardown();
+        // webcontainerInstance = undefined;
+      }
     }
-  }, []);
+  }, [languageProps]);
 
   if (!runner || cannonStatus === CannonStatus.Unintialized) {
     <Cannon.Provider value={{
@@ -90,14 +161,14 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         files,
       },
       commands: {
-        updateFile: ({ fileName, content }) => {
-          setFiles(prevFiles => ({
-            ...prevFiles,
-            [fileName]: content,
-          }));
+        updateFile: () => {
+          throw new Error('No runner');
         },
-        updateActiveFile: ({ fileName }) => {
-          setActiveFile(fileName);
+        updateActiveFile: () => {
+          throw new Error('No runner');
+        },
+        updateLanguageProps: () => {
+          throw new Error('No runner');
         },
         run: () => {
           throw new Error('No runner');
@@ -162,6 +233,9 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           break;
       }
       setCannonStatus(CannonStatus.Ready);
+
+      // Trigger event handler.
+      onRun?.();
     };
     postRunEffect();
   }, [cannonStatus]);
@@ -185,7 +259,9 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         updateActiveFile: ({ fileName }) => {
           setActiveFile(fileName);
         },
-
+        updateLanguageProps: ({ languageProps }) => {
+          setLanguageProps(languageProps);
+        },
         run(): void {
           setCannonStatus(cannonStatus => {
             if (cannonStatus === CannonStatus.Running) throw new Error('Already running');

@@ -9,7 +9,7 @@
   "types": "dist/main.d.ts",
   "scripts": {
     "dev": "vite",
-    "build": "tsc --p ./tsconfig-build.json && vite build",
+    "build": "tsc --p ./tsconfig-build.json && vite build --watch",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview",
     "prepublishOnly": "npm run build"
@@ -21,6 +21,7 @@
     "@codesandbox/sandpack-client": "^2.10.0",
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
+    "@webcontainer/api": "^1.1.8",
     "codemirror": "^6.0.1",
     "lodash.debounce": "^4.0.8"
   },

@@ -24,19 +24,21 @@ function App() {
 }
 
 function CannonInner({
-  // iframe
+  iframe
 }: {
   iframe: HTMLIFrameElement
 }) {
-  const { initialFiles, initialOutput: _ } = getTemplate(Language.MaelstromGo);
+  // const { initialFiles, initialOutput: _ } = getTemplate(Language.MaelstromGo);
+  const { initialFiles, initialOutput: _ } = getTemplate(Language.JavascriptWebContainer);
   return (
     <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
       <Cannon
         files={initialFiles}
         output={""}
         languageProps={{
-          language: Language.MaelstromGo,
-          runnerUrl: 'https://cryingpotat0--cannon-runners-run.modal.run',
+          language: Language.JavascriptWebContainer,
+          iframe,
+          // runnerUrl: 'https://cryingpotat0--cannon-runners-run.modal.run',
         }}
         terminalConfig={{
           hideStderr: true,

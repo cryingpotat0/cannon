@@ -8,9 +8,9 @@ import { Extension } from '@codemirror/state';
 import { rust } from '@codemirror/lang-rust';
 import { CannonProps, Language } from './types';
 import { CannonProvider } from './context';
-// import { javascript } from '@codemirror/lang-javascript';
+import { javascript } from '@codemirror/lang-javascript';
 
-const getLanguageExtension = (language: Language): Extension => {
+export const getLanguageExtension = (language: Language): Extension => {
   switch (language) {
     case Language.Rust: {
       return rust();
@@ -19,12 +19,14 @@ const getLanguageExtension = (language: Language): Extension => {
       // TODO: The javascript extension seems to break rerunning the code? Very weird.
       return rust();
     }
+    case Language.JavascriptWebContainer: {
+      // TODO: The javascript extension seems to break rerunning the code? Very weird.
+      return javascript();
+    }
     case Language.Go: {
-      // err I can't find the go package
       return StreamLanguage.define(go);
     }
     case Language.MaelstromGo: {
-      // err I can't find the go package
       return StreamLanguage.define(go);
     }
     default:
@@ -44,7 +46,6 @@ export function Cannon({
 
   editorTheme ??= solarizedLight;
   viewerTheme ??= solarizedLight;
-
 
   const editorExtensions = [getLanguageExtension(languageProps.language), createTheme(editorTheme),];
   const viewerExtensions = [createTheme(viewerTheme)];

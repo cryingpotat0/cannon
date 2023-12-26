@@ -1,10 +1,12 @@
 import { SandpackClient } from "@codesandbox/sandpack-client";
 import { ThemeOptions } from "./create_theme";
 import { ViewUpdate } from '@codemirror/view';
+import { WebContainer } from "@webcontainer/api";
 
 export enum Language {
   Rust = 'rust',
   Javascript = 'javascript',
+  JavascriptWebContainer = 'javascript_web_container',
   Go = 'go',
   MaelstromGo = 'maelstrom_go',
 }
@@ -17,6 +19,7 @@ export type CannonContextType = {
   commands: {
     updateFile: (args: { fileName: string, content: string }) => void;
     updateActiveFile: (args: { fileName: string }) => void;
+    updateLanguageProps: (args: { languageProps: LanguageProps }) => void;
     run(): void;
   },
 }
@@ -43,6 +46,7 @@ export type CannonProviderProps = {
   files: Record<string, string>,
   children?: React.ReactNode,
   output?: string,
+  onRun?: () => void,
 }
 
 
@@ -59,8 +63,11 @@ export type LanguageProps = {
   },
 } | {
   language: Language.Javascript,
-  iframe: HTMLIFrameElement,
-};
+  iframe?: HTMLIFrameElement,
+} | {
+  language: Language.JavascriptWebContainer,
+  iframe?: HTMLIFrameElement,
+}
 
 
 export type RunnerInformation = {
@@ -77,6 +84,9 @@ export type RunnerInformation = {
 } | {
   language: Language.Javascript,
   client: SandpackClient,
+} | {
+  language: Language.JavascriptWebContainer,
+  client: WebContainer
 };
 
 export enum CannonStatus {
