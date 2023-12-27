@@ -1,3 +1,4 @@
+import { SandpackBundlerFiles } from "@codesandbox/sandpack-client";
 import { FileSystemTree } from "@webcontainer/api";
 
 export function filesToWebcontainerFiles(files: Record<string, string>): FileSystemTree {
@@ -42,3 +43,13 @@ export function filesToWebcontainerFiles(files: Record<string, string>): FileSys
   return fileSystemTree;
 }
 
+export function filesForSandpack(files: Record<string, string>): SandpackBundlerFiles {
+  return Object.entries(files).reduce((acc, [key, value]) => {
+    return {
+      ...acc,
+      [key]: {
+        code: value,
+      },
+    };
+  }, {});
+}

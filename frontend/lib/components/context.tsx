@@ -2,7 +2,7 @@ import { useState, createContext, useEffect, useContext, } from 'react';
 import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus } from './types';
 import { SandboxSetup, loadSandpackClient } from '@codesandbox/sandpack-client';
 import { WebContainer } from "@webcontainer/api";
-import { filesToWebcontainerFiles } from './webcontainer_utils';
+import { filesToWebcontainerFiles, filesForSandpack } from './utils';
 
 const Cannon = createContext<CannonContextType | null>(null);
 
@@ -31,7 +31,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
       case Language.MaelstromGo:
         const { runnerUrl, command, options } = languageProps;
         setCannonStatus(CannonStatus.Ready)
-        console.log('setting runner options to', options);
         setRunner({
           language,
           runnerUrl,
@@ -40,7 +39,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         });
         break;
       case Language.Javascript:
-        const { iframe } = languageProps;
+        const { iframe, options: jsOptions } = languageProps;
         if (!iframe) {
           // Language props will be updated when the iframe is ready.
           return;
@@ -48,14 +47,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         (async () => {
           const content: SandboxSetup = {
             entry: "/index.js",
-            files: Object.entries(files).reduce((acc, [key, value]) => {
-              return {
-                ...acc,
-                [key]: {
-                  code: value,
-                },
-              };
-            }, {})
+            files: filesForSandpack(files),
           };
 
           const client = await loadSandpackClient(
@@ -64,7 +56,11 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
             {
               showOpenInCodeSandbox: false,
               // TODO: understand why we need externalResources.
-              externalResources: ["https://cdn.tailwindcss.com"],
+              externalResources: jsOptions?.externalResources || ["https://cdn.tailwindcss.com"],
+              bundlerURL: jsOptions?.bundlerURL,
+              // bundlerURL: 'http://127.0.0.1:9000/www',
+              // bundlerURL: 'https://sandpack-bundler.codesandbox.io/',
+              // reactDevTools: 'latest',
             }
           );
           client.listen((msg) => {
@@ -72,6 +68,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
               const logs = msg.log.flatMap(({ data }) => data + '\n');
               const text = logs.join('');
               setOutput(prevOutput => `${prevOutput}${text}`);
+            } else {
             }
           });
 
@@ -229,6 +226,15 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           break;
 
         case Language.Javascript:
+          const { client } = runner;
+          client.updateSandbox({
+            files: filesForSandpack(files),
+          });
+          await new Promise(resolve => client.listen(msg => {
+            if (msg.type === 'done') {
+              resolve(undefined);
+            }
+          }));
           // TODO: plumb sandpack updates
           break;
       }
@@ -259,8 +265,8 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         updateActiveFile: ({ fileName }) => {
           setActiveFile(fileName);
         },
-        updateLanguageProps: ({ languageProps }) => {
-          setLanguageProps(languageProps);
+        updateLanguageProps: (updateFn) => {
+          setLanguageProps(updateFn(languageProps));
         },
         run(): void {
           setCannonStatus(cannonStatus => {

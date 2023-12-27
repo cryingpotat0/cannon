@@ -19,7 +19,7 @@ export type CannonContextType = {
   commands: {
     updateFile: (args: { fileName: string, content: string }) => void;
     updateActiveFile: (args: { fileName: string }) => void;
-    updateLanguageProps: (args: { languageProps: LanguageProps }) => void;
+    updateLanguageProps: (updateFn: (prevLanguageProps: LanguageProps) => LanguageProps) => void;
     run(): void;
   },
 }
@@ -64,6 +64,10 @@ export type LanguageProps = {
 } | {
   language: Language.Javascript,
   iframe?: HTMLIFrameElement,
+  options?: {
+    externalResources?: string[],
+    bundlerURL?: string,
+  },
 } | {
   language: Language.JavascriptWebContainer,
   iframe?: HTMLIFrameElement,
