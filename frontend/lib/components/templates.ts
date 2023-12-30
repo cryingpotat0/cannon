@@ -47,8 +47,7 @@ const javascriptTemplate = () => {
   return {
     initialFiles: {
       // We infer dependencies and the entry point from package.json 
-      "/package.json":
-        JSON.stringify(
+      "/package.json": `
           {
             "name": "test-cra",
             "version": "0.1.0",
@@ -80,10 +79,7 @@ const javascriptTemplate = () => {
                 "last 1 safari version"
               ]
             }
-          },
-          null,
-          2
-        )
+          }`
       ,
       "/src/App.js": `
 function App() {
@@ -167,7 +163,7 @@ const javascriptWebcontainerTemplate = () => {
     initialFiles: {
       // We infer dependencies and the entry point from package.json 
       "/package.json":
-        JSON.stringify(
+        `
           {
             "name": "test-cra",
             "version": "0.1.0",
@@ -200,10 +196,7 @@ const javascriptWebcontainerTemplate = () => {
                 "last 1 safari version"
               ]
             }
-          },
-          null,
-          2
-        )
+          }`
       ,
       "/tailwind.config.js": `
 module.exports = {
