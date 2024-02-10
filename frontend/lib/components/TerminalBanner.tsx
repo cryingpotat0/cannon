@@ -5,11 +5,11 @@ import { EditorView, Panel, showPanel } from '@codemirror/view';
 import { createRoot } from 'react-dom/client';
 import { StateEffectType } from '@codemirror/state';
 
-const TerminalBanner = ({
-  onClick,
+export const TerminalBanner = ({
+  onRun,
   isLoading,
 }: {
-  onClick?: MouseEventHandler<HTMLButtonElement>,
+  onRun?: MouseEventHandler<HTMLButtonElement>,
   isLoading: boolean
 }) => {
   return (
@@ -23,7 +23,7 @@ const TerminalBanner = ({
         fontFamily: "monospace",
       }}>{">_ Terminal"}</span>
       <button
-        onClick={onClick}
+        onClick={onRun}
         disabled={isLoading}
         style={{
           backgroundColor: 'inherit',
@@ -42,7 +42,7 @@ function headerPanelGenerator(onRun: MouseEventHandler<HTMLButtonElement>, toggl
   return function headerPanel(_view: EditorView): Panel {
     let dom = document.createElement("div")
     let root = createRoot(dom);
-    root.render(<TerminalBanner isLoading={false} onClick={onRun} />);
+    root.render(<TerminalBanner isLoading={false} onRun={onRun} />);
     return {
       dom,
       top: true,
@@ -50,7 +50,7 @@ function headerPanelGenerator(onRun: MouseEventHandler<HTMLButtonElement>, toggl
         for (let t of update.transactions) {
           for (let e of t.effects) {
             if (e.is(toggleLoading)) {
-              root.render(<TerminalBanner isLoading={Boolean(e.value)} onClick={onRun} />);
+              root.render(<TerminalBanner isLoading={Boolean(e.value)} onRun={onRun} />);
             }
           }
         }
@@ -60,7 +60,7 @@ function headerPanelGenerator(onRun: MouseEventHandler<HTMLButtonElement>, toggl
 }
 
 
-export default function header({
+export function CmTerminalBanner({
   onRun,
   toggleLoading,
 }: {

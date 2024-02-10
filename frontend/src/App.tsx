@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Cannon, Language, getTemplate } from '../lib/main';
+import { Cannon, Language, getTemplate, solarizedLight } from '../lib/main';
+import initialFiles from './astro_demo.json';
 import "./App.css";
 
 function App() {
@@ -29,7 +30,7 @@ function CannonInner({
   iframe: HTMLIFrameElement
 }) {
   // const { initialFiles, initialOutput: _ } = getTemplate(Language.MaelstromGo);
-  const { initialFiles, initialOutput: _ } = getTemplate(Language.JavascriptWebContainer);
+  // const { initialFiles, initialOutput: _ } = getTemplate(Language.JavascriptWebContainer);
   return (
     <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
       <Cannon

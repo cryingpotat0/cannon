@@ -11,6 +11,22 @@ export enum Language {
   MaelstromGo = 'maelstrom_go',
 }
 
+export type CannonEventListener = {
+  dispose: () => void;
+};
+
+export enum CannonEventName {
+  output = 'output',
+};
+
+export type CannonEvent = {
+  name: CannonEventName.output,
+  data: string,
+  clear?: boolean,
+};
+
+export type CannonEventListenerFn = (data: CannonEvent) => void;
+
 export type CannonContextType = {
   runner?: RunnerInformation;
   cannonStatus: CannonStatus;
@@ -21,6 +37,7 @@ export type CannonContextType = {
     updateActiveFile: (args: { fileName: string }) => void;
     updateLanguageProps: (updateFn: (prevLanguageProps: LanguageProps) => LanguageProps) => void;
     run(): void;
+    on(event: CannonEventName, listener: CannonEventListenerFn): CannonEventListener;
   },
 }
 
@@ -28,12 +45,14 @@ export type CannonProps = {
   editorTheme?: ThemeOptions,
   viewerTheme?: ThemeOptions,
   onEditorUpdate?: ({ currentTab, update }: { currentTab: string, update: ViewUpdate }) => void,
-  terminalConfig?: TerminalConfig,
+  // This type is weird for backwards compatibility. Once I find all uses I should move to passing themes as part of these config objects.
+  terminalConfig?: Omit<TerminalConfig, 'theme'>,
 } & CannonProviderProps;
 
 export type TerminalConfig = {
   hideStderr?: boolean,
   onTerminalUpdate?: ({ text }: { text: string }) => void,
+  theme: ThemeOptions,
 }
 
 export type FileData = {

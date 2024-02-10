@@ -1,5 +1,5 @@
 import { useState, createContext, useEffect, useContext, } from 'react';
-import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus } from './types';
+import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus, CannonEventName, CannonEventListenerFn, CannonEvent } from './types';
 import { SandboxSetup, loadSandpackClient } from '@codesandbox/sandpack-client';
 import { WebContainer } from "@webcontainer/api";
 import { filesToWebcontainerFiles, filesForSandpack } from './utils';
@@ -16,9 +16,20 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
   const [runner, setRunner] = useState<RunnerInformation | undefined>(undefined);
   const [cannonStatus, setCannonStatus] = useState<CannonStatus>(CannonStatus.Unintialized);
   const [output, setOutput] = useState<string>(initialOutput || "");
+  const [event, setEvent] = useState<CannonEvent | undefined>(undefined);
   const [files, setFiles] = useState<Record<string, string>>(initialFiles);
   const [activeFile, setActiveFile] = useState<string>(Object.keys(files)[0]);
   const [languageProps, setLanguageProps] = useState(initialLanguageProps);
+  const [listeners, setListeners] = useState<Record<CannonEventName, CannonEventListenerFn[]>>({
+    [CannonEventName.output]: [],
+  });
+
+  useEffect(() => {
+    if (!event) return;
+    for (const listener of listeners[event.name]) {
+      listener(event);
+    }
+  }, [event]);
 
   useEffect(() => {
     if (cannonStatus !== CannonStatus.Unintialized) return;
@@ -68,6 +79,10 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
               const logs = msg.log.flatMap(({ data }) => data + '\n');
               const text = logs.join('');
               setOutput(prevOutput => `${prevOutput}${text}`);
+              setEvent({
+                name: CannonEventName.output,
+                data: text,
+              });
             } else {
             }
           });
@@ -100,8 +115,14 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           installProcess.output.pipeTo(new WritableStream({
             write(text) {
               setOutput(prevOutput => `${prevOutput}${text}`);
+              setEvent({
+                name: CannonEventName.output,
+                data: text,
+              });
             }
           }));
+
+
           const installExitCode = await installProcess.exit;
           const { iframe } = languageProps;
 
@@ -112,11 +133,15 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           const startProcess = await webcontainerInstance.spawn('npm', ['run', 'start']);
           startProcess.output.pipeTo(new WritableStream({
             write(text) {
-              console.log('got text', text);
               setOutput(prevOutput => `${prevOutput}${text}`);
+              setEvent({
+                name: CannonEventName.output,
+                data: text,
+              });
             }
           }));
 
+          console.log('waiting for server-ready');
           webcontainerInstance.on('error', (err) => {
             console.error('webcontainer error', err);
           });
@@ -125,10 +150,11 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
             if (iframe) {
               console.log('setting iframe src to ', url);
               iframe.src = url;
+              // TODO: the webcontainer iframe should let me hijack the console.
             }
           });
 
-          if (!destroyed && cannonStatus === CannonStatus.Unintialized) {
+          if (cannonStatus === CannonStatus.Unintialized) {
             setCannonStatus(CannonStatus.Ready)
             setRunner({
               language,
@@ -169,6 +195,9 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         },
         run: () => {
           throw new Error('No runner');
+        },
+        on: () => {
+          throw new Error('No runner');
         }
       },
     }}>
@@ -181,6 +210,11 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     if (cannonStatus !== CannonStatus.Running) return;
     const postRunEffect = async () => {
       setOutput("");
+      setEvent({
+        name: CannonEventName.output,
+        data: "",
+        clear: true,
+      });
       if (!runner) throw new Error('No runner');
       const { language } = runner;
       switch (language) {
@@ -219,9 +253,18 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
 
               const text = new TextDecoder().decode(value);
               setOutput(prevData => `${prevData}${text}`);
+              setEvent({
+                name: CannonEventName.output,
+                data: text,
+              });
             }
           } catch (e: any) {
+            // TODO: set output on event, no need to set it up individually.
             setOutput(e.toString());
+            setEvent({
+              name: CannonEventName.output,
+              data: e.toString(),
+            });
           }
           break;
 
@@ -237,6 +280,10 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           }));
           // TODO: plumb sandpack updates
           break;
+        case Language.JavascriptWebContainer:
+          const { client: webcontainerInstance } = runner;
+          // TODO: don't mount the whole directory, track dirty and only update files as necessary.
+          await webcontainerInstance.mount(filesToWebcontainerFiles(files));
       }
       setCannonStatus(CannonStatus.Ready);
 
@@ -274,6 +321,27 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
             return CannonStatus.Running;
           });
         },
+        on: (eventName, listener) => {
+          setListeners(prevListeners => {
+            const existingListeners = prevListeners[eventName] || [];
+            return {
+              ...prevListeners,
+              [eventName]: [...existingListeners, listener],
+            };
+          });
+          return {
+            dispose: () => {
+              setListeners(prevListeners => {
+                const existingListeners = prevListeners[eventName] || [];
+                const newListeners = existingListeners.filter(l => l !== listener);
+                return {
+                  ...prevListeners,
+                  [eventName]: newListeners,
+                };
+              });
+            }
+          };
+        }
       },
     }}>
       {children}

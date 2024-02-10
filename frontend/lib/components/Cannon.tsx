@@ -1,5 +1,6 @@
 import CodeEditor from './CodeEditor';
 import Terminal from './Terminal';
+import XTerminal from './XTerminal';
 
 import { StreamLanguage } from "@codemirror/language"
 import { go } from "@codemirror/legacy-modes/mode/go"
@@ -47,8 +48,8 @@ export function Cannon({
   editorTheme ??= solarizedLight;
   viewerTheme ??= solarizedLight;
 
+
   const editorExtensions = [getLanguageExtension(languageProps.language), createTheme(editorTheme),];
-  const viewerExtensions = [createTheme(viewerTheme)];
 
   return (
     <CannonProvider
@@ -60,9 +61,11 @@ export function Cannon({
         extensions={editorExtensions}
         onUpdate={onEditorUpdate}
       />
-      <Terminal
-        extensions={viewerExtensions}
-        config={terminalConfig}
+      <XTerminal
+        config={{
+          ...terminalConfig,
+          theme: viewerTheme,
+        }}
       />
     </CannonProvider>
   )

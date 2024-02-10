@@ -176,7 +176,7 @@ const javascriptWebcontainerTemplate = () => {
               "react-dom": "^18.2.0",
               "react-scripts": "5.0.1",
               "web-vitals": "^2.1.4",
-              "tailwindcss": "^3.3.3",
+              "tailwindcss": "^3.3.3"
             },
             "scripts": {
               "start": "react-scripts start",

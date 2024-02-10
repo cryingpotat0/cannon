@@ -4,7 +4,7 @@ import { EditorState, Extension, RangeSetBuilder, StateEffect, StateEffectType, 
 import { EditorView, Decoration, ViewPlugin, ViewUpdate, WidgetType } from "@codemirror/view";
 import CodeMirror from './codemirror';
 import { minimalSetup } from 'codemirror';
-import TerminalBanner from './TerminalBanner';
+import { CmTerminalBanner } from './TerminalBanner';
 import { CannonStatus, TerminalConfig } from './types';
 import { useCannon } from './context';
 
@@ -119,7 +119,7 @@ function Terminal({
         stderrHighlight(),
         EditorView.editable.of(false),
         EditorState.readOnly.of(true),
-        TerminalBanner({
+        CmTerminalBanner({
           onRun: run,
           toggleLoading
         }),
