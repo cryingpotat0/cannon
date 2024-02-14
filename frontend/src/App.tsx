@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Cannon, Language, getTemplate, solarizedLight } from '../lib/main';
+import { Cannon, Language, getTemplate, solarizedLight } from '..';
 import initialFiles from './astro_demo.json';
 import "./App.css";
 

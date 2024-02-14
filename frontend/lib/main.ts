@@ -4,7 +4,7 @@ export { solarizedLight, birdsOfParadise, espresso, ayuLight, noctisLilac } from
 export { Language } from './components/types';
 export { createTheme } from './components/create_theme';
 
-import Terminal from './components/Terminal';
+import Terminal from './components/XTerminal';
 import Iframe from './components/Iframe';
 import CodeEditor from './components/CodeEditor';
 export { Terminal, Iframe, CodeEditor };

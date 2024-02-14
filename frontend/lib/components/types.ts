@@ -34,10 +34,11 @@ export type CannonContextType = {
   fileData: FileData;
   commands: {
     updateFile: (args: { fileName: string, content: string }) => void;
-    updateActiveFile: (args: { fileName: string }) => void;
     updateLanguageProps: (updateFn: (prevLanguageProps: LanguageProps) => LanguageProps) => void;
     run(): void;
     on(event: CannonEventName, listener: CannonEventListenerFn): CannonEventListener;
+    changeFocus: (focus: Focus) => void;
+    addHighlight: (highlight: Highlight) => void;
   },
 }
 
@@ -56,9 +57,29 @@ export type TerminalConfig = {
 }
 
 export type FileData = {
-  activeFile: string;
-  files: Record<string, string>;
+  files: CannonFiles,
+  highlights?: Array<Highlight>;
+  focus: Focus;
 };
+
+export type Highlight = {
+  filePath: string,
+  start: number,
+  end: number,
+};
+
+export type Focus = {
+  filePath: string,
+  startLine?: number,
+};
+
+export type CannonFile = {
+  content: string,
+  dirty?: boolean,
+  editable?: boolean,
+}
+
+export type CannonFiles = Record<string, CannonFile>;
 
 export type CannonProviderProps = {
   languageProps: LanguageProps,
@@ -66,6 +87,8 @@ export type CannonProviderProps = {
   children?: React.ReactNode,
   output?: string,
   onRun?: () => void,
+  highlights?: Array<Highlight>,
+  focus?: Focus,
 }
 
 
@@ -109,7 +132,7 @@ export type RunnerInformation = {
   client: SandpackClient,
 } | {
   language: Language.JavascriptWebContainer,
-  client: WebContainer
+  client: WebContainer,
 };
 
 export enum CannonStatus {

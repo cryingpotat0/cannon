@@ -2,7 +2,7 @@ import CodeMirror from './codemirror';
 import { useEffect, useRef, useState } from 'react';
 
 import { EditorView, ViewUpdate } from '@codemirror/view';
-import { Extension } from '@codemirror/state';
+import { Extension, EditorSelection } from '@codemirror/state';
 import { basicSetup } from 'codemirror';
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
@@ -21,15 +21,17 @@ function CodeEditor({
   let cmEditor = useRef<EditorView>(null);
   const {
     fileData: {
-      activeFile,
       files,
+      highlights,
+      focus,
     },
     commands: {
       updateFile,
-      updateActiveFile,
+      changeFocus,
     },
   } = useCannon();
 
+  const { filePath: activeFile, startLine: activeLine } = focus;
   const [currentText, setCurrentText] = useState<string>(files[activeFile]);
 
   // React is hilarious. To make this work I have to do:
@@ -47,7 +49,28 @@ function CodeEditor({
         insert: files[activeFile],
       }
     });
+
   }, [activeFile]);
+
+  useEffect(() => {
+    if (!activeLine || !cmEditor.current) return;
+
+    // Try scrolling 5 lines below so that the line is in the middle of the screen.
+    // TODO: there has to be a better way gdi
+    let line = cmEditor.current.state.doc.line(activeLine + 5);
+    if (!line) {
+      line = cmEditor.current.state.doc.line(activeLine);
+    }
+    console.log('coords', line);
+    // Need to slightly delay the dispatch.
+    cmEditor.current.dispatch({
+      scrollIntoView: true,
+      selection: EditorSelection.cursor(line.from),
+    });
+    setTimeout(() => {
+    }, 0);
+  }, [activeLine]);
+
 
   useEffect(() => {
     if (!cmEditor.current) return;
@@ -68,25 +91,14 @@ function CodeEditor({
         basicSetup,
         keymap.of([indentWithTab]),
         EditorView.updateListener.of((update: ViewUpdate) => {
-          // console.log('update', update);
           if (update.docChanged) {
             setCurrentText(update.view.state.doc.toString());
-            // setCode(update.view.state.doc.toString());
-            // console.log('activeTabRef.current', activeTabRef.current);
-            // const currentTab = activeFile.toString();
-            // const currentCode = update.view.state.doc.toString();
-            // // console.log('activeTabRef.current', currentTab, currentCode);
-            // // console.log('update.view.state.doc.toString()', update.view.state.doc.toString());
-            // updateFile({
-            //   fileName: currentTab,
-            //   content: currentCode
-            // })
           }
         }),
         TabSwitcher({
           setActiveTab: (tab) => {
-            updateActiveFile({
-              fileName: tab,
+            changeFocus({
+              filePath: tab,
             });
           },
           tabs: Object.keys(files),

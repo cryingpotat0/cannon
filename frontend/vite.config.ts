@@ -12,7 +12,7 @@ export default defineConfig({
   plugins: [
     react(),
     // Figure out how to make this work with Astro first. Until then imports are separate.
-    // libInjectCss(),
+    libInjectCss(),
     dts({ include: ['lib'] }),
     {
       name: "isolation",

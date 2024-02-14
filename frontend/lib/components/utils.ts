@@ -1,7 +1,8 @@
 import { SandpackBundlerFiles } from "@codesandbox/sandpack-client";
 import { FileSystemTree } from "@webcontainer/api";
+import { CannonFiles } from "./types";
 
-export function filesToWebcontainerFiles(files: Record<string, string>): FileSystemTree {
+export function filesToWebcontainerFiles(files: CannonFiles): FileSystemTree {
   const fileSystemTree: FileSystemTree = {};
 
   for (let filePath in files) {
@@ -26,7 +27,7 @@ export function filesToWebcontainerFiles(files: Record<string, string>): FileSys
             };
           }
           // @ts-ignore
-          currentLevel[part].file.contents = files[filePath];
+          currentLevel[part].file.contents = files[filePath].content;
         } else {
           // It's a directory
           if (!currentLevel[part]) {
@@ -43,12 +44,12 @@ export function filesToWebcontainerFiles(files: Record<string, string>): FileSys
   return fileSystemTree;
 }
 
-export function filesForSandpack(files: Record<string, string>): SandpackBundlerFiles {
+export function filesForSandpack(files: CannonFiles): SandpackBundlerFiles {
   return Object.entries(files).reduce((acc, [key, value]) => {
     return {
       ...acc,
       [key]: {
-        code: value,
+        code: value.content,
       },
     };
   }, {});

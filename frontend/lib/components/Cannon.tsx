@@ -1,5 +1,5 @@
 import CodeEditor from './CodeEditor';
-import Terminal from './Terminal';
+// import Terminal from './Terminal';
 import XTerminal from './XTerminal';
 
 import { StreamLanguage } from "@codemirror/language"

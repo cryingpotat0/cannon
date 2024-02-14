@@ -15,10 +15,10 @@ function Xterminal({
   const [terminal, setTerminal] = useState<Terminal>();
   const [fitAddon, setFitAddon] = useState<FitAddon>();
   const theme = {
-    background: config.theme!.settings.background,
-    foreground: config.theme!.settings.foreground,
-    cursor: config.theme!.settings.caret,
-    selectionBackground: config.theme!.settings.selection,
+    background: config.theme.settings.background,
+    foreground: config.theme.settings.foreground,
+    cursor: config.theme.settings.caret,
+    selectionBackground: config.theme.settings.selection,
   };
 
   const {

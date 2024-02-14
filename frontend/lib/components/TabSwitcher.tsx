@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { EditorView, Panel, showPanel } from '@codemirror/view';
 import { createRoot } from 'react-dom/client';
 
@@ -10,6 +10,12 @@ const TabSwitcher = (
   }: { setActiveTab: (tab: string) => void, tabs: string[], activeTab: string }
 ) => {
   let [internalActiveTab, setInternalActiveTab] = useState(activeTab);
+  const activeTabRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (activeTabRef.current) {
+      activeTabRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+    }
+  }, [activeTabRef.current, internalActiveTab]);
   return (
     <div style={{
       display: 'flex',
@@ -33,6 +39,7 @@ const TabSwitcher = (
             backgroundColor: internalActiveTab === tab ? 'inherit' : 'transparent',
             fontFamily: 'monospace',
           }}
+          ref={internalActiveTab === tab ? activeTabRef : null}
         >
           {tab}
         </div>
@@ -60,7 +67,10 @@ function headerPanelGenerator({
 
 
 export default function header(
-  args: { setActiveTab: (tab: string) => void, tabs: string[], activeTab: string }
-) {
+  args: {
+    setActiveTab: (tab: string) => void,
+    tabs: string[],
+    activeTab: string
+  }) {
   return showPanel.of(headerPanelGenerator(args))
 }

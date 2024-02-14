@@ -1,5 +1,5 @@
 import { useState, createContext, useEffect, useContext, } from 'react';
-import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus, CannonEventName, CannonEventListenerFn, CannonEvent } from './types';
+import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus, CannonEventName, CannonEventListenerFn, CannonEvent, Highlight, Focus, CannonFiles } from './types';
 import { SandboxSetup, loadSandpackClient } from '@codesandbox/sandpack-client';
 import { WebContainer } from "@webcontainer/api";
 import { filesToWebcontainerFiles, filesForSandpack } from './utils';
@@ -12,17 +12,26 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
   files: initialFiles,
   output: initialOutput,
   onRun,
+  focus: initialFocus,
+  highlights: initialHighlights,
 }: CannonProviderProps) => {
   const [runner, setRunner] = useState<RunnerInformation | undefined>(undefined);
   const [cannonStatus, setCannonStatus] = useState<CannonStatus>(CannonStatus.Unintialized);
   const [output, setOutput] = useState<string>(initialOutput || "");
   const [event, setEvent] = useState<CannonEvent | undefined>(undefined);
-  const [files, setFiles] = useState<Record<string, string>>(initialFiles);
-  const [activeFile, setActiveFile] = useState<string>(Object.keys(files)[0]);
+  const [files, setFiles] = useState<CannonFiles>(Object.entries(initialFiles).reduce((a, b) => {
+    a[b[0]] = {
+      content: b[1],
+      dirty: false,
+    };
+    return a;
+  }, {} as CannonFiles));
   const [languageProps, setLanguageProps] = useState(initialLanguageProps);
   const [listeners, setListeners] = useState<Record<CannonEventName, CannonEventListenerFn[]>>({
     [CannonEventName.output]: [],
   });
+  const [focus, setFocus] = useState<Focus>(initialFocus || { filePath: Object.keys(files)[0] });
+  const [highlights, setHighlights] = useState<Highlight[] | undefined>(initialHighlights);
 
   useEffect(() => {
     if (!event) return;
@@ -100,6 +109,11 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         })();
         break;
       case Language.JavascriptWebContainer:
+        const { iframe: wcIframe } = languageProps;
+        if (!wcIframe) {
+          // Language props will be updated when the iframe is ready.
+          return;
+        }
         (async () => {
           if (!webcontainerInstance) {
             try {
@@ -124,7 +138,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
 
 
           const installExitCode = await installProcess.exit;
-          const { iframe } = languageProps;
 
           if (installExitCode !== 0) {
             throw new Error(`Unable to run npm install ${output}`);
@@ -145,14 +158,14 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           webcontainerInstance.on('error', (err) => {
             console.error('webcontainer error', err);
           });
-          webcontainerInstance.on('server-ready', (port, url) => {
-            console.log(`Server ready on port ${port} and url ${url}`);
-            if (iframe) {
-              console.log('setting iframe src to ', url);
-              iframe.src = url;
-              // TODO: the webcontainer iframe should let me hijack the console.
-            }
+          const iframeUrl = await new Promise<string>(resolve => {
+            webcontainerInstance!.on('server-ready', (port, url) => {
+              console.log(`Server ready on port ${port} and url ${url}`);
+              resolve(url);
+            });
           });
+
+          wcIframe.src = iframeUrl;
 
           if (cannonStatus === CannonStatus.Unintialized) {
             setCannonStatus(CannonStatus.Ready)
@@ -180,14 +193,12 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
       output: "",
       cannonStatus: CannonStatus.Unintialized,
       fileData: {
-        activeFile,
         files,
+        highlights,
+        focus,
       },
       commands: {
         updateFile: () => {
-          throw new Error('No runner');
-        },
-        updateActiveFile: () => {
           throw new Error('No runner');
         },
         updateLanguageProps: () => {
@@ -198,7 +209,13 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         },
         on: () => {
           throw new Error('No runner');
-        }
+        },
+        addHighlight: () => {
+          throw new Error('No runner');
+        },
+        changeFocus: () => {
+          throw new Error('No runner');
+        },
       },
     }}>
       {children}
@@ -284,6 +301,9 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           const { client: webcontainerInstance } = runner;
           // TODO: don't mount the whole directory, track dirty and only update files as necessary.
           await webcontainerInstance.mount(filesToWebcontainerFiles(files));
+          if (languageProps.language === Language.JavascriptWebContainer) {
+            languageProps.iframe?.contentWindow?.location.reload();
+          }
       }
       setCannonStatus(CannonStatus.Ready);
 
@@ -299,18 +319,19 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
       output,
       cannonStatus,
       fileData: {
-        activeFile,
         files,
+        highlights,
+        focus,
       },
       commands: {
         updateFile: ({ fileName, content }) => {
           setFiles(prevFiles => ({
             ...prevFiles,
-            [fileName]: content,
+            [fileName]: {
+              content,
+              dirty: true,
+            },
           }));
-        },
-        updateActiveFile: ({ fileName }) => {
-          setActiveFile(fileName);
         },
         updateLanguageProps: (updateFn) => {
           setLanguageProps(updateFn(languageProps));
@@ -341,7 +362,16 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
               });
             }
           };
-        }
+        },
+        addHighlight: (highlight) => {
+          setHighlights(prevHighlights => {
+            if (!prevHighlights) return [highlight];
+            return [...prevHighlights, highlight];
+          });
+        },
+        changeFocus: (newFocus) => {
+          setFocus(newFocus);
+        },
       },
     }}>
       {children}
