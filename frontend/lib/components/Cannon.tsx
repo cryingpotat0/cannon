@@ -43,6 +43,8 @@ export function Cannon({
   viewerTheme,
   onEditorUpdate,
   terminalConfig,
+  focus,
+  highlights,
 }: CannonProps) {
 
   editorTheme ??= solarizedLight;
@@ -56,6 +58,8 @@ export function Cannon({
       languageProps={languageProps}
       files={files}
       output={output}
+      focus={focus}
+      highlights={highlights}
     >
       <CodeEditor
         extensions={editorExtensions}

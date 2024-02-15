@@ -32,7 +32,7 @@ function CodeEditor({
   } = useCannon();
 
   const { filePath: activeFile, startLine: activeLine } = focus;
-  const [currentText, setCurrentText] = useState<string>(files[activeFile]);
+  const [currentText, setCurrentText] = useState<string>(files[activeFile].content);
 
   // React is hilarious. To make this work I have to do:
   // When a tab is clicked, update "activeFile"
@@ -46,7 +46,7 @@ function CodeEditor({
       changes: {
         from: 0,
         to: cmEditor.current!.state.doc.length,
-        insert: files[activeFile],
+        insert: files[activeFile].content,
       }
     });
 
@@ -86,7 +86,7 @@ function CodeEditor({
     if (cmEditor.current) return;
     const editor = CodeMirror({
       parentEl: editorEl.current,
-      doc: files[activeFile],
+      doc: files[activeFile].content,
       extentions: [
         basicSetup,
         keymap.of([indentWithTab]),

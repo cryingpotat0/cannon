@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Cannon, Language, getTemplate, solarizedLight } from '..';
+import { Cannon, Language, getTemplate, solarizedLight } from '../lib/main';
 import initialFiles from './astro_demo.json';
 import "./App.css";
 
@@ -43,6 +43,9 @@ function CannonInner({
         }}
         terminalConfig={{
           hideStderr: true,
+        }}
+        focus={{
+          filePath: "src/layouts/Page.astro",
         }}
       />
 
