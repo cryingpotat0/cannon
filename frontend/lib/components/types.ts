@@ -63,9 +63,15 @@ export type FileData = {
 };
 
 export type Highlight = {
+  id: number,
   filePath: string,
   start: number,
   end: number,
+  color: string,
+  annotation?: {
+    content: string;
+    style?: Record<string, string>
+  };
 };
 
 export type Focus = {
@@ -87,7 +93,7 @@ export type CannonProviderProps = {
   children?: React.ReactNode,
   output?: string,
   onRun?: () => void,
-  highlights?: Array<Highlight>,
+  highlights?: Array<Omit<Highlight, 'id'>>,
   focus?: Focus,
 }
 

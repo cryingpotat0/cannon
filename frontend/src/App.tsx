@@ -47,6 +47,59 @@ function CannonInner({
         focus={{
           filePath: "src/layouts/Page.astro",
         }}
+        highlights={[
+          {
+            filePath: "src/layouts/Page.astro",
+            start: 36,
+            end: 46,
+            color: 'rgba(5, 230, 0, 0.3)',
+            annotation: {
+              content: 'This is a cool note',
+              style: {
+                'background-color': 'rgba(5, 230, 0, 1)',
+                'border-radius': '5px',
+                'border': '0px',
+                color: 'black',
+                padding: '0.5rem',
+                'font-family': 'monospace',
+              }
+            },
+          },
+          {
+            filePath: "src/layouts/Page.astro",
+            start: 38,
+            end: 42,
+            color: 'rgba(255, 230, 0, 0.3)',
+            annotation: {
+              content: 'This is a cool note part 2',
+              style: {
+                'background-color': 'rgba(255, 230, 0, 1)',
+                'border-radius': '5px',
+                'border': '0px',
+                color: 'black',
+                padding: '0.5rem',
+                'font-family': 'monospace',
+              }
+            },
+          },
+          {
+            filePath: "src/pages/blog/index.astro",
+            start: 1,
+            end: 10,
+            color: 'rgba(255, 230, 0, 0.3)',
+            annotation: {
+              content: 'This is a cool note part 3',
+              style: {
+                'background-color': 'rgba(255, 230, 0, 1)',
+                'border-radius': '5px',
+                'border': '0px',
+                color: 'black',
+                padding: '0.5rem',
+                'font-family': 'monospace',
+              }
+            },
+          }
+        ]}
       />
 
     </div>

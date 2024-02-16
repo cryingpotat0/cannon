@@ -1,13 +1,14 @@
 import CodeMirror from './codemirror';
 import { useEffect, useRef, useState } from 'react';
 
-import { EditorView, ViewUpdate } from '@codemirror/view';
-import { Extension, EditorSelection } from '@codemirror/state';
+import { EditorView, ViewUpdate, ViewPlugin, DecorationSet, Decoration } from '@codemirror/view';
+import { Extension, EditorSelection, RangeSetBuilder } from '@codemirror/state';
 import { basicSetup } from 'codemirror';
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
 import TabSwitcher from './TabSwitcher';
 import { useCannon } from './context';
+import { addHighlight, highlightExtension } from './highlights';
 
 function CodeEditor({
   extensions,
@@ -67,8 +68,6 @@ function CodeEditor({
       scrollIntoView: true,
       selection: EditorSelection.cursor(line.from),
     });
-    setTimeout(() => {
-    }, 0);
   }, [activeLine]);
 
 
@@ -79,6 +78,15 @@ function CodeEditor({
       content: currentText,
     });
   }, [currentText]);
+
+  useEffect(() => {
+    if (!cmEditor.current || !highlights) return;
+    const effects = highlights
+      .filter((highlight) => highlight.filePath === activeFile)
+      .map((highlight) => addHighlight.of(highlight));
+    cmEditor.current.dispatch({ effects });
+
+  }, [highlights, activeFile]);
 
 
   useEffect(() => {
@@ -103,7 +111,8 @@ function CodeEditor({
           },
           tabs: Object.keys(files),
           activeTab: activeFile,
-        })
+        }),
+        highlightExtension(),
       ]
         .concat(onUpdate ? [
           EditorView.updateListener.of((update: ViewUpdate) => {
@@ -123,4 +132,6 @@ function CodeEditor({
     </div>
   )
 }
+
+
 export default CodeEditor;
