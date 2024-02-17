@@ -31,10 +31,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     [CannonEventName.output]: [],
   });
   const [focus, setFocus] = useState<Focus>(initialFocus || { filePath: Object.keys(files)[0] });
-  const [highlights, setHighlights] = useState<Highlight[] | undefined>(initialHighlights?.map((h, i) => ({
-    ...h,
-    id: i
-  })));
+  const [highlights, setHighlights] = useState<Highlight[] | undefined>(initialHighlights);
 
   useEffect(() => {
     if (!event) return;

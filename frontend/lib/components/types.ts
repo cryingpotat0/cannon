@@ -63,7 +63,6 @@ export type FileData = {
 };
 
 export type Highlight = {
-  id: number,
   filePath: string,
   start: number,
   end: number,
@@ -93,7 +92,7 @@ export type CannonProviderProps = {
   children?: React.ReactNode,
   output?: string,
   onRun?: () => void,
-  highlights?: Array<Omit<Highlight, 'id'>>,
+  highlights?: Array<Highlight>,
   focus?: Focus,
 }
 
