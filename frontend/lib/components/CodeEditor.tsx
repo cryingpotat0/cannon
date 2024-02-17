@@ -1,8 +1,8 @@
 import CodeMirror from './codemirror';
 import { useEffect, useRef, useState } from 'react';
 
-import { EditorView, ViewUpdate, ViewPlugin, DecorationSet, Decoration } from '@codemirror/view';
-import { Extension, EditorSelection, RangeSetBuilder } from '@codemirror/state';
+import { EditorView, ViewUpdate, } from '@codemirror/view';
+import { Extension, EditorSelection, } from '@codemirror/state';
 import { basicSetup } from 'codemirror';
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";

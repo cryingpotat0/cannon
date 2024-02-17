@@ -64,8 +64,14 @@ export type FileData = {
 
 export type Highlight = {
   filePath: string,
-  start: number,
-  end: number,
+  start: {
+    line: number,
+    ch?: number,
+  },
+  end: {
+    line: number,
+    ch?: number,
+  },
   color: string,
   annotation?: {
     content: string;

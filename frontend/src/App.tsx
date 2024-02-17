@@ -50,8 +50,12 @@ function CannonInner({
         highlights={[
           {
             filePath: "src/layouts/Page.astro",
-            start: 36,
-            end: 46,
+            start: {
+              line: 36
+            },
+            end: {
+              line: 46,
+            },
             color: 'rgba(5, 230, 0, 0.3)',
             annotation: {
               content: 'This is a cool note',
@@ -67,9 +71,9 @@ function CannonInner({
           },
           {
             filePath: "src/layouts/Page.astro",
-            start: 38,
-            end: 42,
-            color: 'rgba(255, 230, 0, 0.3)',
+            start: { line: 38, ch: 10 },
+            end: { line: 38, ch: 20 },
+            color: 'rgba(255, 0, 0, 1)',
             annotation: {
               content: 'This is a cool note part 2',
               style: {
@@ -84,8 +88,8 @@ function CannonInner({
           },
           {
             filePath: "src/pages/blog/index.astro",
-            start: 1,
-            end: 10,
+            start: { line: 1 },
+            end: { line: 10 },
             color: 'rgba(255, 230, 0, 0.3)',
             annotation: {
               content: 'This is a cool note part 3',

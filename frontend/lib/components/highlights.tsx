@@ -1,5 +1,5 @@
 import { Decoration, DecorationSet, EditorView, Tooltip, showTooltip } from "@codemirror/view"
-import { StateField, StateEffect, ChangeDesc, Text } from "@codemirror/state"
+import { StateField, StateEffect, Text } from "@codemirror/state"
 import { Highlight } from "./types"
 
 export const addHighlight = StateEffect.define<Highlight>()
@@ -13,8 +13,13 @@ function addRange({
     attributes: { style: `background-color: ${highlight.color}` }
   })
 
-  const from = doc.line(highlight.start).from;
-  const to = doc.line(highlight.end).to;
+  const from = doc.line(highlight.start.line).from + (highlight.start.ch || 0);
+  let to;
+  if (highlight.end.ch) {
+    to = doc.line(highlight.end.line).from + highlight.end.ch;
+  } else {
+    to = doc.line(highlight.end.line).to;
+  }
 
   return ranges.update({
     add: [highlightColor.range(from, to)]
@@ -50,8 +55,8 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
       if (e.is(addHighlight)) {
         const annotation = e.value.annotation;
         if (!annotation) continue;
-        const from = doc.line(e.value.start).to;
-        const to = doc.line(e.value.end).to;
+        const from = doc.line(e.value.start.line).to + (e.value.start.ch || 0);
+        const to = doc.line(e.value.end.line).to + (e.value.end.ch || 0);
         let styleString = '';
         if (annotation.style) {
           styleString = Object.entries(annotation.style).map(([key, value]) => `${key}:${value}`).join(';');
