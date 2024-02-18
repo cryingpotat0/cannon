@@ -56,7 +56,7 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
         const annotation = e.value.annotation;
         if (!annotation) continue;
         const highlight = e.value;
-        // const from = doc.line(e.value.start.line).to + (e.value.start.ch || 0);
+        const from = doc.line(highlight.start.line).from + (highlight.start.ch || 0);
         let to;
         if (highlight.end.ch) {
           to = doc.line(highlight.end.line).from + highlight.end.ch;
@@ -68,8 +68,9 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
           styleString = Object.entries(annotation.style).map(([key, value]) => `${key}:${value}`).join(';');
         }
         tooltips.push({
-          pos: to,
+          pos: from,
           end: to,
+          arrow: true,
           create: () => {
             let dom = document.createElement("div")
             dom.className = "cm-tooltip-cursor"
@@ -78,10 +79,6 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
             dom.style = styleString
             return {
               dom,
-              offset: {
-                x: 10,
-                y: -20,
-              }
             }
           }
         })
