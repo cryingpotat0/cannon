@@ -71,8 +71,8 @@ function CannonInner({
           },
           {
             filePath: "src/layouts/Page.astro",
-            start: { line: 38, ch: 10 },
-            end: { line: 38, ch: 20 },
+            start: { line: 40, ch: 34 },
+            end: { line: 40, ch: 49 },
             color: 'rgba(255, 0, 0, 1)',
             annotation: {
               content: 'This is a cool note part 2',

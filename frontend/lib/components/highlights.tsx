@@ -55,14 +55,20 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
       if (e.is(addHighlight)) {
         const annotation = e.value.annotation;
         if (!annotation) continue;
-        const from = doc.line(e.value.start.line).to + (e.value.start.ch || 0);
-        const to = doc.line(e.value.end.line).to + (e.value.end.ch || 0);
+        const highlight = e.value;
+        // const from = doc.line(e.value.start.line).to + (e.value.start.ch || 0);
+        let to;
+        if (highlight.end.ch) {
+          to = doc.line(highlight.end.line).from + highlight.end.ch;
+        } else {
+          to = doc.line(highlight.end.line).to;
+        }
         let styleString = '';
         if (annotation.style) {
           styleString = Object.entries(annotation.style).map(([key, value]) => `${key}:${value}`).join(';');
         }
         tooltips.push({
-          pos: from,
+          pos: to,
           end: to,
           create: () => {
             let dom = document.createElement("div")
