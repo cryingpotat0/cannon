@@ -17,12 +17,15 @@ export type CannonEventListener = {
 
 export enum CannonEventName {
   output = 'output',
+  reset = 'reset',
 };
 
 export type CannonEvent = {
   name: CannonEventName.output,
   data: string,
   clear?: boolean,
+} | {
+  name: CannonEventName.reset,
 };
 
 export type CannonEventListenerFn = (data: CannonEvent) => void;
@@ -39,6 +42,8 @@ export type CannonContextType = {
     on(event: CannonEventName, listener: CannonEventListenerFn): CannonEventListener;
     changeFocus: (focus: Focus) => void;
     addHighlight: (highlight: Highlight) => void;
+    resetHighlights: ({ filePath }: { filePath?: string }) => void;
+    reset(): void;
   },
 }
 

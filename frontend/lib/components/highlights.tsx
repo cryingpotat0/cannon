@@ -3,6 +3,7 @@ import { StateField, StateEffect, Text } from "@codemirror/state"
 import { Highlight } from "./types"
 
 export const addHighlight = StateEffect.define<Highlight>()
+export const resetHighlightsEffect = StateEffect.define()
 
 function addRange({
   ranges, highlight, doc
@@ -30,15 +31,19 @@ const highlightedRanges = StateField.define({
   create() {
     return Decoration.none
   },
-  update(_, tr) {
+  update(oldHighlights, tr) {
     let ranges: DecorationSet = Decoration.none
     for (let e of tr.effects) {
+      if (e.is(resetHighlightsEffect)) {
+        return Decoration.none
+      }
       if (e.is(addHighlight)) {
         ranges = addRange({
           ranges, highlight: e.value, doc: tr.state.doc
         })
       }
     }
+    if (ranges === Decoration.none) return oldHighlights
     return ranges
   },
   provide: field => EditorView.decorations.from(field)
@@ -48,10 +53,13 @@ const highlightedRanges = StateField.define({
 const cursorTooltipField = StateField.define<readonly Tooltip[]>({
   create: () => [],
 
-  update(_, tr) {
+  update(oldTooltips, tr) {
     const doc = tr.state.doc;
     const tooltips = [];
     for (let e of tr.effects) {
+      if (e.is(resetHighlightsEffect)) {
+        return [];
+      }
       if (e.is(addHighlight)) {
         const annotation = e.value.annotation;
         if (!annotation) continue;
@@ -84,6 +92,8 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
         })
       }
     }
+
+    if (!tooltips.length) return oldTooltips;
     return tooltips;
   },
 

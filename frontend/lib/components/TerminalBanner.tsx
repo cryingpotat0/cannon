@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faSpinner, faTrashRestore } from '@fortawesome/free-solid-svg-icons';
 import { MouseEventHandler } from 'react';
 import { EditorView, Panel, showPanel } from '@codemirror/view';
 import { createRoot } from 'react-dom/client';
@@ -7,9 +7,11 @@ import { StateEffectType } from '@codemirror/state';
 
 export const TerminalBanner = ({
   onRun,
+  reset,
   isLoading,
 }: {
   onRun?: MouseEventHandler<HTMLButtonElement>,
+  reset: MouseEventHandler<HTMLButtonElement>,
   isLoading: boolean
 }) => {
   return (
@@ -22,6 +24,17 @@ export const TerminalBanner = ({
         fontWeight: "bold",
         fontFamily: "monospace",
       }}>{">_ Terminal"}</span>
+      <button
+        onClick={reset}
+        disabled={isLoading}
+        style={{
+          backgroundColor: 'inherit',
+          border: '0',
+          borderRadius: '10%',
+          cursor: 'pointer',
+        }}>
+        <FontAwesomeIcon icon={faTrashRestore} spin />
+      </button>
       <button
         onClick={onRun}
         disabled={isLoading}

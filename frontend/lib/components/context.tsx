@@ -29,6 +29,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
   const [languageProps, setLanguageProps] = useState(initialLanguageProps);
   const [listeners, setListeners] = useState<Record<CannonEventName, CannonEventListenerFn[]>>({
     [CannonEventName.output]: [],
+    [CannonEventName.reset]: [],
   });
   const [focus, setFocus] = useState<Focus>(initialFocus || { filePath: Object.keys(files)[0] });
   const [highlights, setHighlights] = useState<Highlight[] | undefined>(initialHighlights);
@@ -213,9 +214,15 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         addHighlight: () => {
           throw new Error('No runner');
         },
+        resetHighlights: () => {
+          throw new Error('No runner');
+        },
         changeFocus: () => {
           throw new Error('No runner');
         },
+        reset: () => {
+          throw new Error('No runner');
+        }
       },
     }}>
       {children}
@@ -369,9 +376,38 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
             return [...prevHighlights, highlight];
           });
         },
+        resetHighlights({ filePath }) {
+          setHighlights(prevHighlights => {
+            if (!prevHighlights) return prevHighlights;
+            if (!filePath) return [];
+            return prevHighlights.filter(h => h.filePath !== filePath);
+          });
+        },
         changeFocus: (newFocus) => {
           setFocus(newFocus);
         },
+        reset: () => {
+          setOutput("");
+          setEvent({
+            name: CannonEventName.output,
+            data: "",
+            clear: true,
+          });
+          setFiles(
+            Object.entries(initialFiles).reduce((a, b) => {
+              a[b[0]] = {
+                content: b[1],
+                dirty: false,
+              };
+              return a;
+            }, {} as CannonFiles));
+          setLanguageProps(initialLanguageProps);
+          setFocus(initialFocus || { filePath: Object.keys(initialFiles)[0] });
+          setHighlights(initialHighlights);
+          setEvent({
+            name: CannonEventName.reset,
+          });
+        }
       },
     }}>
       {children}

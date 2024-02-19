@@ -1,5 +1,5 @@
 import CodeMirror from './codemirror';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { EditorView, ViewUpdate, } from '@codemirror/view';
 import { Extension, EditorSelection, } from '@codemirror/state';
@@ -8,7 +8,8 @@ import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
 import TabSwitcher from './TabSwitcher';
 import { useCannon } from './context';
-import { addHighlight, highlightExtension } from './highlights';
+import { addHighlight, highlightExtension, resetHighlightsEffect } from './highlights';
+import { CannonEventName } from './types';
 
 function CodeEditor({
   extensions,
@@ -29,8 +30,30 @@ function CodeEditor({
     commands: {
       updateFile,
       changeFocus,
+      resetHighlights,
+      on,
     },
   } = useCannon();
+
+
+  useEffect(() => {
+    if (!cmEditor.current) return;
+    // TODO: make the reset callback reintroduce highlights and annotations
+    const resetCallback = () => {
+      cmEditor.current!.dispatch({
+        changes: {
+          from: 0,
+          to: cmEditor.current!.state.doc.length,
+          insert: files[activeFile].content,
+        }
+      });
+    }
+    const resetListener = on(CannonEventName.reset, resetCallback);
+    return () => {
+      resetListener.dispose();
+    }
+  }, [cmEditor]);
+
 
   const { filePath: activeFile, startLine: activeLine } = focus;
   const [currentText, setCurrentText] = useState<string>(files[activeFile].content);
@@ -77,6 +100,9 @@ function CodeEditor({
       fileName: activeFile,
       content: currentText,
     });
+    // TODO: this breaks tab switching
+    resetHighlights({ filePath: activeFile });
+    cmEditor.current.dispatch({ effects: [resetHighlightsEffect.of(null)] });
   }, [currentText]);
 
   useEffect(() => {

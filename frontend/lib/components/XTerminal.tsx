@@ -26,6 +26,7 @@ function Xterminal({
     commands: {
       run,
       on,
+      reset,
     },
   } = useCannon();
 
@@ -84,7 +85,7 @@ function Xterminal({
     <div style={{
       backgroundColor: theme.background,
     }}>
-      <TerminalBanner isLoading={cannonStatus === 'running'} onRun={run} />
+      <TerminalBanner isLoading={cannonStatus === 'running'} onRun={run} reset={reset} />
       <div ref={xtermRef}
         style={{
           paddingLeft: '1.25rem',
