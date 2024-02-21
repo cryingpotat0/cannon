@@ -34,10 +34,10 @@ const highlightedRanges = StateField.define({
   update(oldHighlights, tr) {
     let ranges: DecorationSet = Decoration.none
     for (let e of tr.effects) {
-      if (e.is(resetHighlightsEffect)) {
-        console.log('resetting highlights')
-        return Decoration.none
-      }
+      // if (e.is(resetHighlightsEffect)) {
+      //   console.log('resetting highlights')
+      //   return Decoration.none
+      // }
       if (e.is(addHighlight)) {
         console.log('adding highlights')
         ranges = addRange({
@@ -45,7 +45,7 @@ const highlightedRanges = StateField.define({
         })
       }
     }
-    if (ranges === Decoration.none) return oldHighlights
+    // if (ranges === Decoration.none) return oldHighlights
     return ranges
   },
   provide: field => EditorView.decorations.from(field)
@@ -59,9 +59,9 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
     const doc = tr.state.doc;
     const tooltips = [];
     for (let e of tr.effects) {
-      if (e.is(resetHighlightsEffect)) {
-        return [];
-      }
+      // if (e.is(resetHighlightsEffect)) {
+      //   return [];
+      // }
       if (e.is(addHighlight)) {
         const annotation = e.value.annotation;
         if (!annotation) continue;
@@ -95,7 +95,7 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
       }
     }
 
-    if (!tooltips.length) return oldTooltips;
+    // if (!tooltips.length) return oldTooltips;
     return tooltips;
   },
 
