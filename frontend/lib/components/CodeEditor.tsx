@@ -71,20 +71,23 @@ function CodeEditor({
   // When the editor updates, update "currentText"
   // When "currentText" changes, update the file
   // I guess this is what happens when you mix a ref with a state variable.
-  useEffect(() => {
-    if (!activeLine || !cmEditor.current) return;
+  //
 
-    // Try scrolling 5 lines below so that the line is in the middle of the screen.
-    // TODO: there has to be a better way gdi
-    let line = cmEditor.current.state.doc.line(activeLine + 5);
-    if (!line) {
-      line = cmEditor.current.state.doc.line(activeLine);
-    }
-    cmEditor.current.dispatch({
-      scrollIntoView: true,
-      selection: EditorSelection.cursor(line.from),
-    });
-  }, [activeLine]);
+  // Scroll to the active line only on start. If you do it every time active line changes, it causes typing to be terrible.
+  // useEffect(() => {
+  //   if (!activeLine || !cmEditor.current) return;
+
+  //   // Try scrolling 5 lines below so that the line is in the middle of the screen.
+  //   // TODO: there has to be a better way gdi
+  //   let line = cmEditor.current.state.doc.line(activeLine + 5);
+  //   if (!line) {
+  //     line = cmEditor.current.state.doc.line(activeLine);
+  //   }
+  //   cmEditor.current.dispatch({
+  //     scrollIntoView: true,
+  //     selection: EditorSelection.cursor(line.from),
+  //   });
+  // }, []);
 
 
   useEffect(() => {
@@ -96,7 +99,7 @@ function CodeEditor({
       content: currentText,
     });
     // Reset highlights in codemirror.
-    cmEditor.current.dispatch({ effects: [resetHighlightsEffect.of(null)] });
+    // cmEditor.current.dispatch({ effects: [resetHighlightsEffect.of(null)] });
   }, [currentText]);
 
   useEffect(() => {
@@ -121,6 +124,12 @@ function CodeEditor({
     } else {
       cmEditor.current.dispatch({ effects });
     }
+    // Set cursor to the previous value it was at.
+    // const currentCursor = cmEditor.current.state.selection.main.from;
+    // cmEditor.current.dispatch({
+    //   scrollIntoView: true,
+    //   selection: EditorSelection.cursor(currentCursor),
+    // });
 
   }, [highlights, activeFile]);
 

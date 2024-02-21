@@ -47,6 +47,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     const newHighlights = highlights.filter(highlight => {
       return !files[highlight.filePath].dirty;
     });
+    if (newHighlights.length === highlights.length) return;
     setHighlights(newHighlights);
   }, [files]);
 
@@ -313,11 +314,22 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         case Language.JavascriptWebContainer:
           const { client: webcontainerInstance } = runner;
           // TODO: don't mount the whole directory, track dirty and only update files as necessary.
-          await webcontainerInstance.mount(filesToWebcontainerFiles(files));
-          if (languageProps.language === Language.JavascriptWebContainer) {
-            languageProps.iframe?.contentWindow?.location.reload();
+          for (const [fileName, file] of Object.entries(files)) {
+            if (!file.dirty) continue;
+            await webcontainerInstance.fs.writeFile(fileName, file.content);
           }
+          // Reset file dirty states.
+          setFiles(prevFiles => {
+            return Object.entries(prevFiles).reduce((a, [fileName, file]) => {
+              a[fileName] = {
+                ...file,
+                dirty: false,
+              };
+              return a;
+            }, {} as CannonFiles);
+          });
       }
+      console.log('done running');
       setCannonStatus(CannonStatus.Ready);
 
       // Trigger event handler.

@@ -45,6 +45,8 @@ const highlightedRanges = StateField.define({
         })
       }
     }
+    // Once we are done adding highlights, scroll the cursor back to its initial position.
+
     // if (ranges === Decoration.none) return oldHighlights
     return ranges
   },
