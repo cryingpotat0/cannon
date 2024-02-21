@@ -115,7 +115,12 @@ function CodeEditor({
       .filter((highlight) => highlight.filePath === activeFile)
       .map((highlight) => addHighlight.of(highlight));
     console.log('dispatching effects', highlights, effects, activeFile)
-    cmEditor.current.dispatch({ effects });
+    if (!effects.length) {
+      console.log('no effects')
+      cmEditor.current.dispatch({ effects: [resetHighlightsEffect.of(null)] });
+    } else {
+      cmEditor.current.dispatch({ effects });
+    }
 
   }, [highlights, activeFile]);
 
