@@ -45,7 +45,13 @@ const highlightedRanges = StateField.define({
         })
       }
     }
-    // Once we are done adding highlights, scroll the cursor back to its initial position.
+    // TODO: there's still a bug here where highlighting causes the cursor to
+    // move back to the beginning. This means the first edit anyone makes jumps
+    // back up to the first line, and subsequent lines are fine. Either
+    // reincorporate highlight resetting (bleh) or figure out why codemirror
+    // has this behavior (even more bleh) jumps back up to the first line, and
+    // subsequent lines are fine. Either reincorporate highlight resetting
+    // (bleh) or figure out why codemirror has this behavior (even more bleh)
 
     // if (ranges === Decoration.none) return oldHighlights
     return ranges
