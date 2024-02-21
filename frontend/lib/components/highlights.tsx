@@ -35,9 +35,11 @@ const highlightedRanges = StateField.define({
     let ranges: DecorationSet = Decoration.none
     for (let e of tr.effects) {
       if (e.is(resetHighlightsEffect)) {
+        console.log('resetting highlights')
         return Decoration.none
       }
       if (e.is(addHighlight)) {
+        console.log('adding highlights')
         ranges = addRange({
           ranges, highlight: e.value, doc: tr.state.doc
         })

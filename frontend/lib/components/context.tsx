@@ -42,6 +42,15 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
   }, [event]);
 
   useEffect(() => {
+    // Remove highlights for dirty files.
+    if (!highlights) return;
+    const newHighlights = highlights.filter(highlight => {
+      return !files[highlight.filePath].dirty;
+    });
+    setHighlights(newHighlights);
+  }, [files]);
+
+  useEffect(() => {
     if (cannonStatus !== CannonStatus.Unintialized) return;
     const { language } = languageProps;
     let destroyed = false;
@@ -214,9 +223,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         addHighlight: () => {
           throw new Error('No runner');
         },
-        resetHighlights: () => {
-          throw new Error('No runner');
-        },
         changeFocus: () => {
           throw new Error('No runner');
         },
@@ -374,13 +380,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           setHighlights(prevHighlights => {
             if (!prevHighlights) return [highlight];
             return [...prevHighlights, highlight];
-          });
-        },
-        resetHighlights({ filePath }) {
-          setHighlights(prevHighlights => {
-            if (!prevHighlights) return prevHighlights;
-            if (!filePath) return [];
-            return prevHighlights.filter(h => h.filePath !== filePath);
           });
         },
         changeFocus: (newFocus) => {

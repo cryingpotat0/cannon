@@ -1,5 +1,5 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faSpinner, faTrashRestore } from '@fortawesome/free-solid-svg-icons';
+import { faPlay, faRefresh, faSpinner, } from '@fortawesome/free-solid-svg-icons';
 import { MouseEventHandler } from 'react';
 import { EditorView, Panel, showPanel } from '@codemirror/view';
 import { createRoot } from 'react-dom/client';
@@ -24,28 +24,33 @@ export const TerminalBanner = ({
         fontWeight: "bold",
         fontFamily: "monospace",
       }}>{">_ Terminal"}</span>
-      <button
-        onClick={reset}
-        disabled={isLoading}
-        style={{
-          backgroundColor: 'inherit',
-          border: '0',
-          borderRadius: '10%',
-          cursor: 'pointer',
-        }}>
-        <FontAwesomeIcon icon={faTrashRestore} spin />
-      </button>
-      <button
-        onClick={onRun}
-        disabled={isLoading}
-        style={{
-          backgroundColor: 'inherit',
-          border: '0',
-          borderRadius: '10%',
-          cursor: 'pointer',
-        }}>
-        {isLoading ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faPlay} />}
-      </button>
+      <div style={{
+        display: "flex",
+        gap: "0.5rem",
+      }}>
+        <button
+          onClick={reset}
+          disabled={isLoading}
+          style={{
+            backgroundColor: 'inherit',
+            border: '0',
+            borderRadius: '10%',
+            cursor: 'pointer',
+          }}>
+          <FontAwesomeIcon icon={faRefresh} />
+        </button>
+        <button
+          onClick={onRun}
+          disabled={isLoading}
+          style={{
+            backgroundColor: 'inherit',
+            border: '0',
+            borderRadius: '10%',
+            cursor: 'pointer',
+          }}>
+          {isLoading ? <FontAwesomeIcon icon={faSpinner} spin /> : <FontAwesomeIcon icon={faPlay} />}
+        </button>
+      </div>
     </div >
   );
 };

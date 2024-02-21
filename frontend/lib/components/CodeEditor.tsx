@@ -1,5 +1,5 @@
 import CodeMirror from './codemirror';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { EditorView, ViewUpdate, } from '@codemirror/view';
 import { Extension, EditorSelection, } from '@codemirror/state';
@@ -30,7 +30,6 @@ function CodeEditor({
     commands: {
       updateFile,
       changeFocus,
-      resetHighlights,
       on,
     },
   } = useCannon();
@@ -40,13 +39,21 @@ function CodeEditor({
     if (!cmEditor.current) return;
     // TODO: make the reset callback reintroduce highlights and annotations
     const resetCallback = () => {
-      cmEditor.current!.dispatch({
+      cmEditor.current?.dispatch({
         changes: {
           from: 0,
           to: cmEditor.current!.state.doc.length,
           insert: files[activeFile].content,
         }
       });
+
+      if (!highlights) return;
+
+      const effects = highlights
+        .filter((highlight) => highlight.filePath === activeFile)
+        .map((highlight) => addHighlight.of(highlight));
+      cmEditor.current?.dispatch({ effects });
+
     }
     const resetListener = on(CannonEventName.reset, resetCallback);
     return () => {
@@ -65,18 +72,6 @@ function CodeEditor({
   // When "currentText" changes, update the file
   // I guess this is what happens when you mix a ref with a state variable.
   useEffect(() => {
-    if (!cmEditor.current) return;
-    cmEditor.current.dispatch({
-      changes: {
-        from: 0,
-        to: cmEditor.current!.state.doc.length,
-        insert: files[activeFile].content,
-      }
-    });
-
-  }, [activeFile]);
-
-  useEffect(() => {
     if (!activeLine || !cmEditor.current) return;
 
     // Try scrolling 5 lines below so that the line is in the middle of the screen.
@@ -85,8 +80,6 @@ function CodeEditor({
     if (!line) {
       line = cmEditor.current.state.doc.line(activeLine);
     }
-    console.log('coords', line);
-    // Need to slightly delay the dispatch.
     cmEditor.current.dispatch({
       scrollIntoView: true,
       selection: EditorSelection.cursor(line.from),
@@ -96,20 +89,32 @@ function CodeEditor({
 
   useEffect(() => {
     if (!cmEditor.current) return;
+    if (currentText === files[activeFile].content) return;
+    console.log('updating file', activeFile);
     updateFile({
       fileName: activeFile,
       content: currentText,
     });
-    // TODO: this breaks tab switching
-    resetHighlights({ filePath: activeFile });
+    // Reset highlights in codemirror.
     cmEditor.current.dispatch({ effects: [resetHighlightsEffect.of(null)] });
   }, [currentText]);
 
   useEffect(() => {
-    if (!cmEditor.current || !highlights) return;
+    if (!cmEditor.current) return;
+    cmEditor.current.dispatch({
+      changes: {
+        from: 0,
+        to: cmEditor.current!.state.doc.length,
+        insert: files[activeFile].content,
+      }
+    });
+
+    if (!highlights) return;
+
     const effects = highlights
       .filter((highlight) => highlight.filePath === activeFile)
       .map((highlight) => addHighlight.of(highlight));
+    console.log('dispatching effects', highlights, effects, activeFile)
     cmEditor.current.dispatch({ effects });
 
   }, [highlights, activeFile]);

@@ -42,7 +42,6 @@ export type CannonContextType = {
     on(event: CannonEventName, listener: CannonEventListenerFn): CannonEventListener;
     changeFocus: (focus: Focus) => void;
     addHighlight: (highlight: Highlight) => void;
-    resetHighlights: ({ filePath }: { filePath?: string }) => void;
     reset(): void;
   },
 }
