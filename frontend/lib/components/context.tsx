@@ -386,6 +386,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         changeFocus: (newFocus) => {
           setFocus(newFocus);
         },
+        // TODO: reset is broken
         reset: () => {
           setOutput("");
           setEvent({
@@ -402,14 +403,11 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
               return a;
             }, {} as CannonFiles));
           setLanguageProps(initialLanguageProps);
+          setFocus(initialFocus || { filePath: Object.keys(initialFiles)[0] });
           setHighlights(initialHighlights);
           setEvent({
             name: CannonEventName.reset,
           });
-          // We cannot reset focus here because it causes issues with how
-          // CodeEditor is implemented today. In particular the tab switching
-          // only tracks internal state, and is the source of truth for
-          // activeFile. So we can't guarantee that it doesn't change after.
         }
       },
     }}>
