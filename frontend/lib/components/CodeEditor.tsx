@@ -2,7 +2,7 @@ import CodeMirror from './codemirror';
 import { useEffect, useRef, useState } from 'react';
 
 import { EditorView, ViewUpdate, } from '@codemirror/view';
-import { Extension, EditorSelection, } from '@codemirror/state';
+import { Extension, EditorSelection, Compartment, EditorState } from '@codemirror/state';
 import { basicSetup } from 'codemirror';
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
@@ -21,7 +21,9 @@ function CodeEditor({
 
   let editorEl = useRef<HTMLDivElement>(null);
   let cmEditor = useRef<EditorView>(null);
+  const cmEditable = new Compartment;
   const {
+    controllable,
     fileData: {
       files,
       highlights,
@@ -61,6 +63,15 @@ function CodeEditor({
     }
   }, [cmEditor]);
 
+  useEffect(() => {
+    if (!cmEditor.current) return;
+    console.log('setting controllable to', controllable);
+    cmEditor.current.dispatch({
+      effects:
+        [cmEditable.reconfigure(EditorState.readOnly.of(!controllable))]
+    });
+  }, [controllable]);
+
 
   const { filePath: activeFile, startLine: activeLine } = focus;
   const [currentText, setCurrentText] = useState<string>(files[activeFile].content);
@@ -71,12 +82,13 @@ function CodeEditor({
   // When the editor updates, update "currentText"
   // When "currentText" changes, update the file
   // I guess this is what happens when you mix a ref with a state variable.
-  //
 
-  // Scroll to the active line only on start. If you do it every time active
-  // line changes, it causes typing to be terrible.
   useEffect(() => {
     if (!activeLine || !cmEditor.current) return;
+    // Make sure we're on the right file
+    if (cmEditor.current.state.doc.toString() !== files[activeFile].content) {
+      return;
+    }
 
     // Try scrolling 5 lines below so that the line is in the middle of the screen.
     // TODO: there has to be a better way gdi
@@ -88,7 +100,7 @@ function CodeEditor({
       scrollIntoView: true,
       selection: EditorSelection.cursor(line.from),
     });
-  }, [activeLine]);
+  }, [focus]);
 
 
   useEffect(() => {
@@ -159,6 +171,7 @@ function CodeEditor({
           activeTab: activeFile,
         }),
         highlightExtension(),
+        cmEditable.of(EditorState.readOnly.of(!controllable)),
       ]
         .concat(onUpdate ? [
           EditorView.updateListener.of((update: ViewUpdate) => {

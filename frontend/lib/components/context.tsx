@@ -33,6 +33,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
   });
   const [focus, setFocus] = useState<Focus>(initialFocus || { filePath: Object.keys(files)[0] });
   const [highlights, setHighlights] = useState<Highlight[] | undefined>(initialHighlights);
+  const [controllable, setControllable] = useState<boolean>(true);
 
   useEffect(() => {
     if (!event) return;
@@ -199,38 +200,22 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
   }, [languageProps]);
 
   if (!runner || cannonStatus === CannonStatus.Unintialized) {
+    const noRunnerHandler = () => {
+      throw new Error('No runner');
+    };
     <Cannon.Provider value={{
       runner: undefined,
       output: "",
       cannonStatus: CannonStatus.Unintialized,
+      controllable,
       fileData: {
         files,
         highlights,
         focus,
       },
-      commands: {
-        updateFile: () => {
-          throw new Error('No runner');
-        },
-        updateLanguageProps: () => {
-          throw new Error('No runner');
-        },
-        run: () => {
-          throw new Error('No runner');
-        },
-        on: () => {
-          throw new Error('No runner');
-        },
-        addHighlight: () => {
-          throw new Error('No runner');
-        },
-        changeFocus: () => {
-          throw new Error('No runner');
-        },
-        reset: () => {
-          throw new Error('No runner');
-        }
-      },
+      commands: new Proxy({}, {
+        get: noRunnerHandler,
+      }) as CannonContextType['commands'],
     }}>
       {children}
     </Cannon.Provider>
@@ -348,7 +333,11 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         highlights,
         focus,
       },
+      controllable,
       commands: {
+        setControllable: (controllable) => {
+          setControllable(controllable);
+        },
         updateFile: ({ fileName, content }) => {
           setFiles(prevFiles => ({
             ...prevFiles,
@@ -413,11 +402,14 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
               return a;
             }, {} as CannonFiles));
           setLanguageProps(initialLanguageProps);
-          setFocus(initialFocus || { filePath: Object.keys(initialFiles)[0] });
           setHighlights(initialHighlights);
           setEvent({
             name: CannonEventName.reset,
           });
+          // We cannot reset focus here because it causes issues with how
+          // CodeEditor is implemented today. In particular the tab switching
+          // only tracks internal state, and is the source of truth for
+          // activeFile. So we can't guarantee that it doesn't change after.
         }
       },
     }}>
