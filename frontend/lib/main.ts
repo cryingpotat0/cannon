@@ -1,7 +1,7 @@
 export { Cannon, getLanguageExtension } from './components/Cannon';
 export { getTemplate } from './components/templates';
 export { solarizedLight, birdsOfParadise, espresso, ayuLight, noctisLilac } from './components/create_theme';
-export { Language } from './components/types';
+export { Language, CannonStatus } from './components/types';
 export { createTheme } from './components/create_theme';
 
 import Terminal from './components/XTerminal';

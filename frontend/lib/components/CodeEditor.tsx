@@ -73,7 +73,8 @@ function CodeEditor({
   // I guess this is what happens when you mix a ref with a state variable.
   //
 
-  // Scroll to the active line only on start. If you do it every time active line changes, it causes typing to be terrible.
+  // Scroll to the active line only on start. If you do it every time active
+  // line changes, it causes typing to be terrible.
   useEffect(() => {
     if (!activeLine || !cmEditor.current) return;
 
@@ -87,7 +88,7 @@ function CodeEditor({
       scrollIntoView: true,
       selection: EditorSelection.cursor(line.from),
     });
-  }, []);
+  }, [activeLine]);
 
 
   useEffect(() => {
