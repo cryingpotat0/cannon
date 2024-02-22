@@ -31,7 +31,7 @@ const highlightedRanges = StateField.define({
   create() {
     return Decoration.none
   },
-  update(oldHighlights, tr) {
+  update(_, tr) {
     let ranges: DecorationSet = Decoration.none
     for (let e of tr.effects) {
       // if (e.is(resetHighlightsEffect)) {
@@ -63,7 +63,7 @@ const highlightedRanges = StateField.define({
 const cursorTooltipField = StateField.define<readonly Tooltip[]>({
   create: () => [],
 
-  update(oldTooltips, tr) {
+  update(_, tr) {
     const doc = tr.state.doc;
     const tooltips = [];
     for (let e of tr.effects) {
