@@ -1,9 +1,6 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlay, faRefresh, faSpinner, } from '@fortawesome/free-solid-svg-icons';
 import { MouseEventHandler } from 'react';
-import { EditorView, Panel, showPanel } from '@codemirror/view';
-import { createRoot } from 'react-dom/client';
-import { StateEffectType } from '@codemirror/state';
 
 export const TerminalBanner = ({
   onRun,
@@ -55,35 +52,3 @@ export const TerminalBanner = ({
   );
 };
 
-
-function headerPanelGenerator(onRun: MouseEventHandler<HTMLButtonElement>, toggleLoading: StateEffectType<boolean>) {
-  return function headerPanel(_view: EditorView): Panel {
-    let dom = document.createElement("div")
-    let root = createRoot(dom);
-    root.render(<TerminalBanner isLoading={false} onRun={onRun} />);
-    return {
-      dom,
-      top: true,
-      update(update) {
-        for (let t of update.transactions) {
-          for (let e of t.effects) {
-            if (e.is(toggleLoading)) {
-              root.render(<TerminalBanner isLoading={Boolean(e.value)} onRun={onRun} />);
-            }
-          }
-        }
-      }
-    }
-  }
-}
-
-
-export function CmTerminalBanner({
-  onRun,
-  toggleLoading,
-}: {
-  onRun: MouseEventHandler<HTMLButtonElement>
-  toggleLoading: StateEffectType<boolean>
-}) {
-  return showPanel.of(headerPanelGenerator(onRun, toggleLoading))
-}

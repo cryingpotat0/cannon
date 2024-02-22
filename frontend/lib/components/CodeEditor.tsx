@@ -74,20 +74,20 @@ function CodeEditor({
   //
 
   // Scroll to the active line only on start. If you do it every time active line changes, it causes typing to be terrible.
-  // useEffect(() => {
-  //   if (!activeLine || !cmEditor.current) return;
+  useEffect(() => {
+    if (!activeLine || !cmEditor.current) return;
 
-  //   // Try scrolling 5 lines below so that the line is in the middle of the screen.
-  //   // TODO: there has to be a better way gdi
-  //   let line = cmEditor.current.state.doc.line(activeLine + 5);
-  //   if (!line) {
-  //     line = cmEditor.current.state.doc.line(activeLine);
-  //   }
-  //   cmEditor.current.dispatch({
-  //     scrollIntoView: true,
-  //     selection: EditorSelection.cursor(line.from),
-  //   });
-  // }, []);
+    // Try scrolling 5 lines below so that the line is in the middle of the screen.
+    // TODO: there has to be a better way gdi
+    let line = cmEditor.current.state.doc.line(activeLine + 5);
+    if (!line) {
+      line = cmEditor.current.state.doc.line(activeLine);
+    }
+    cmEditor.current.dispatch({
+      scrollIntoView: true,
+      selection: EditorSelection.cursor(line.from),
+    });
+  }, []);
 
 
   useEffect(() => {
