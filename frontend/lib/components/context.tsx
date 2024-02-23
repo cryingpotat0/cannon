@@ -298,7 +298,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           break;
         case Language.JavascriptWebContainer:
           const { client: webcontainerInstance } = runner;
-          // TODO: don't mount the whole directory, track dirty and only update files as necessary.
           for (const [fileName, file] of Object.entries(files)) {
             if (!file.dirty) continue;
             await webcontainerInstance.fs.writeFile(fileName, file.content);
@@ -386,7 +385,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         changeFocus: (newFocus) => {
           setFocus(newFocus);
         },
-        // TODO: reset is broken
         reset: () => {
           setOutput("");
           setEvent({
@@ -394,6 +392,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
             data: "",
             clear: true,
           });
+          setFocus(initialFocus || { filePath: Object.keys(initialFiles)[0] });
           setFiles(
             Object.entries(initialFiles).reduce((a, b) => {
               a[b[0]] = {
@@ -403,7 +402,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
               return a;
             }, {} as CannonFiles));
           setLanguageProps(initialLanguageProps);
-          setFocus(initialFocus || { filePath: Object.keys(initialFiles)[0] });
           setHighlights(initialHighlights);
           setEvent({
             name: CannonEventName.reset,

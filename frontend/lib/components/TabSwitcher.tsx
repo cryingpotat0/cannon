@@ -1,6 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { EditorView, Panel, showPanel } from '@codemirror/view';
+import { StateEffect } from "@codemirror/state"
 import { createRoot } from 'react-dom/client';
+
+
+export const setActiveTabEffect = StateEffect.define<string>()
 
 const TabSwitcher = (
   {
@@ -9,13 +13,12 @@ const TabSwitcher = (
     activeTab
   }: { setActiveTab: (tab: string) => void, tabs: string[], activeTab: string }
 ) => {
-  let [internalActiveTab, setInternalActiveTab] = useState(activeTab);
   const activeTabRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (activeTabRef.current) {
       activeTabRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
     }
-  }, [activeTabRef.current, internalActiveTab]);
+  }, [activeTabRef.current]);
   return (
     <div style={{
       display: 'flex',
@@ -28,18 +31,17 @@ const TabSwitcher = (
         <div
           key={index}
           onClick={() => {
-            setInternalActiveTab(tab)
             setActiveTab(tab)
           }}
           style={{
             cursor: 'pointer',
             padding: '0.3rem 0.3rem',
-            fontWeight: internalActiveTab === tab ? 'bold' : 'normal',
+            fontWeight: activeTab === tab ? 'bold' : 'normal',
             marginRight: '0.5rem', // Adds spacing between tabs
-            backgroundColor: internalActiveTab === tab ? 'inherit' : 'transparent',
+            backgroundColor: activeTab === tab ? 'inherit' : 'transparent',
             fontFamily: 'monospace',
           }}
-          ref={internalActiveTab === tab ? activeTabRef : null}
+          ref={activeTab === tab ? activeTabRef : null}
         >
           {tab}
         </div>
@@ -61,6 +63,15 @@ function headerPanelGenerator({
     return {
       dom,
       top: true,
+      update(update) {
+        for (let t of update.transactions) {
+          for (let e of t.effects) {
+            if (e.is(setActiveTabEffect)) {
+              root.render(<TabSwitcher tabs={tabs} activeTab={e.value} setActiveTab={setActiveTab} />);
+            }
+          }
+        }
+      }
     }
   }
 }

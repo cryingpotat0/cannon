@@ -6,7 +6,7 @@ import { Extension, EditorSelection, Compartment, EditorState } from '@codemirro
 import { basicSetup } from 'codemirror';
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
-import TabSwitcher from './TabSwitcher';
+import TabSwitcher, { setActiveTabEffect } from './TabSwitcher';
 import { useCannon } from './context';
 import { addHighlight, highlightExtension, resetHighlightsEffect } from './highlights';
 import { CannonEventName } from './types';
@@ -39,7 +39,6 @@ function CodeEditor({
 
   useEffect(() => {
     if (!cmEditor.current) return;
-    // TODO: make the reset callback reintroduce highlights and annotations
     const resetCallback = () => {
       cmEditor.current?.dispatch({
         changes: {
@@ -117,19 +116,24 @@ function CodeEditor({
 
   useEffect(() => {
     if (!cmEditor.current) return;
-    cmEditor.current.dispatch({
-      changes: {
-        from: 0,
-        to: cmEditor.current!.state.doc.length,
-        insert: files[activeFile].content,
-      }
-    });
 
-    if (!highlights) return;
+    // Update the file if it's changed.
+    if (cmEditor.current.state.doc.toString() !== files[activeFile].content) {
+      cmEditor.current.dispatch({
+        changes: {
+          from: 0,
+          to: cmEditor.current!.state.doc.length,
+          insert: files[activeFile].content,
+        }
+      });
+    }
 
-    const effects = highlights
+
+    // TODO: fix type
+    const effects: any = (highlights || [])
       .filter((highlight) => highlight.filePath === activeFile)
       .map((highlight) => addHighlight.of(highlight));
+    effects.push(setActiveTabEffect.of(activeFile));
     console.log('dispatching effects', highlights, effects, activeFile)
     if (!effects.length) {
       console.log('no effects')
@@ -145,7 +149,6 @@ function CodeEditor({
     // });
 
   }, [highlights, activeFile]);
-
 
   useEffect(() => {
     if (!editorEl.current) return;
