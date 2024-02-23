@@ -82,24 +82,24 @@ function CodeEditor({
   // When "currentText" changes, update the file
   // I guess this is what happens when you mix a ref with a state variable.
 
-  useEffect(() => {
-    if (!activeLine || !cmEditor.current) return;
-    // Make sure we're on the right file
-    if (cmEditor.current.state.doc.toString() !== files[activeFile].content) {
-      return;
-    }
+  // useEffect(() => {
+  //   if (!activeLine || !cmEditor.current) return;
+  //   // Make sure we're on the right file
+  //   if (cmEditor.current.state.doc.toString() !== files[activeFile].content) {
+  //     return;
+  //   }
 
-    // Try scrolling 5 lines below so that the line is in the middle of the screen.
-    // TODO: there has to be a better way gdi
-    let line = cmEditor.current.state.doc.line(activeLine + 5);
-    if (!line) {
-      line = cmEditor.current.state.doc.line(activeLine);
-    }
-    cmEditor.current.dispatch({
-      scrollIntoView: true,
-      selection: EditorSelection.cursor(line.from),
-    });
-  }, [focus]);
+  //   // Try scrolling 5 lines below so that the line is in the middle of the screen.
+  //   // TODO: there has to be a better way gdi
+  //   let line = cmEditor.current.state.doc.line(activeLine + 5);
+  //   if (!line) {
+  //     line = cmEditor.current.state.doc.line(activeLine);
+  //   }
+  //   cmEditor.current.dispatch({
+  //     scrollIntoView: true,
+  //     selection: EditorSelection.cursor(line.from),
+  //   });
+  // }, [focus]);
 
 
   useEffect(() => {
@@ -130,25 +130,39 @@ function CodeEditor({
 
 
     // TODO: fix type
-    const effects: any = (highlights || [])
+    const highlightEffects = (highlights || [])
       .filter((highlight) => highlight.filePath === activeFile)
       .map((highlight) => addHighlight.of(highlight));
-    effects.push(setActiveTabEffect.of(activeFile));
-    console.log('dispatching effects', highlights, effects, activeFile)
-    if (!effects.length) {
-      console.log('no effects')
-      cmEditor.current.dispatch({ effects: [resetHighlightsEffect.of(null)] });
-    } else {
-      cmEditor.current.dispatch({ effects });
-    }
-    // Set cursor to the previous value it was at.
-    // const currentCursor = cmEditor.current.state.selection.main.from;
-    // cmEditor.current.dispatch({
-    //   scrollIntoView: true,
-    //   selection: EditorSelection.cursor(currentCursor),
-    // });
 
-  }, [highlights, activeFile]);
+    // If we have to scroll lines, we need to do things slightly differently.
+    // Dispatch teh scroll and the highlights together after dispatching the
+    // activeFile event.
+    if (activeLine) {
+      cmEditor.current.dispatch({
+        effects: [setActiveTabEffect.of(activeFile)],
+      });
+
+      let line = cmEditor.current.state.doc.line(activeLine + 5);
+      if (!line) {
+        line = cmEditor.current.state.doc.line(activeLine);
+      }
+      // TODO: this is so janky. All this just to prevent highlights from
+      // disappearing? Has to be a better way. Maybe change the higlight model.
+      // Anyway, it kinda works.
+      setTimeout(() => {
+        cmEditor.current?.dispatch({
+          effects: highlightEffects,
+          scrollIntoView: true,
+          selection: EditorSelection.cursor(line.from),
+        });
+      }, 10);
+    } else {
+      // If we don't have to scroll lines, we can just dispatch the highlights with the new file.
+      cmEditor.current.dispatch({
+        effects: [setActiveTabEffect.of(activeFile), ...highlightEffects],
+      });
+    }
+  }, [highlights, focus]);
 
   useEffect(() => {
     if (!editorEl.current) return;
