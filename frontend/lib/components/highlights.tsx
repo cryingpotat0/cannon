@@ -57,7 +57,7 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
 
   update(_, tr) {
     const doc = tr.state.doc;
-    const tooltips = [];
+    const tooltips: Tooltip[] = [];
     for (let e of tr.effects) {
       // if (e.is(resetHighlightsEffect)) {
       //   return [];
@@ -81,6 +81,7 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
           pos: from,
           end: to,
           arrow: true,
+          above: true,
           create: () => {
             let dom = document.createElement("div")
             dom.className = "cm-tooltip-cursor"

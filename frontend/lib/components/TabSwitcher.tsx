@@ -13,8 +13,10 @@ const TabSwitcher = (
     activeTab
   }: { setActiveTab: (tab: string) => void, tabs: string[], activeTab: string }
 ) => {
+  console.log('tabswitcher active tab', activeTab);
   const activeTabRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
+    console.log('ref is ', activeTabRef.current);
     if (activeTabRef.current) {
       activeTabRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
     }
@@ -59,7 +61,6 @@ function headerPanelGenerator({
   return function headerPanel(_view: EditorView): Panel {
     let dom = document.createElement("div")
     let root = createRoot(dom);
-    root.render(<TabSwitcher tabs={tabs} activeTab={activeTab} setActiveTab={setActiveTab} />);
     return {
       dom,
       top: true,

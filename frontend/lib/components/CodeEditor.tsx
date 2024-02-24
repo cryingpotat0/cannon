@@ -8,7 +8,7 @@ import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
 import TabSwitcher, { setActiveTabEffect } from './TabSwitcher';
 import { useCannon } from './context';
-import { addHighlight, highlightExtension, resetHighlightsEffect } from './highlights';
+import { addHighlight, highlightExtension } from './highlights';
 import { CannonEventName } from './types';
 
 function CodeEditor({
@@ -137,6 +137,8 @@ function CodeEditor({
     // If we have to scroll lines, we need to do things slightly differently.
     // Dispatch teh scroll and the highlights together after dispatching the
     // activeFile event.
+
+    console.log('activeLine', activeLine);
     if (activeLine) {
       cmEditor.current.dispatch({
         effects: [setActiveTabEffect.of(activeFile)],
