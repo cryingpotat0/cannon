@@ -7,9 +7,10 @@ import { go } from "@codemirror/legacy-modes/mode/go"
 import { createTheme, solarizedLight } from './create_theme';
 import { Extension } from '@codemirror/state';
 import { rust } from '@codemirror/lang-rust';
-import { CannonProps, Language } from './types';
+import { CannonProps, Language, assertUnreachable } from './types';
 import { CannonProvider } from './context';
 import { javascript } from '@codemirror/lang-javascript';
+import { python } from '@codemirror/legacy-modes/mode/python';
 
 export const getLanguageExtension = (language: Language): Extension => {
   switch (language) {
@@ -30,8 +31,11 @@ export const getLanguageExtension = (language: Language): Extension => {
     case Language.MaelstromGo: {
       return StreamLanguage.define(go);
     }
+    case Language.Pyoidide: {
+      return StreamLanguage.define(python);
+    }
     default:
-      throw new Error(`Language ${language} not supported`);
+      assertUnreachable(language);
   }
 }
 

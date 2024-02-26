@@ -3,12 +3,20 @@ import { ThemeOptions } from "./create_theme";
 import { ViewUpdate } from '@codemirror/view';
 import { WebContainer } from "@webcontainer/api";
 
+
+// A util to allow for exhaustive switch matches.
+export function assertUnreachable(_: never): never;
+export function assertUnreachable(_: Language) {
+  throw new Error('Unreachable');
+}
+
 export enum Language {
   Rust = 'rust',
   Javascript = 'javascript',
   JavascriptWebContainer = 'javascript_web_container',
   Go = 'go',
   MaelstromGo = 'maelstrom_go',
+  Pyoidide = 'pyoidide',
 }
 
 export type CannonEventListener = {
@@ -130,8 +138,16 @@ export type LanguageProps = {
 } | {
   language: Language.JavascriptWebContainer,
   iframe?: HTMLIFrameElement,
-}
+} | {
+  language: Language.Pyoidide,
+};
 
+
+// TODO: replace it with teh actual type.
+type PyodideInterface = {
+  runPythonAsync: (code: string) => Promise<string>,
+  globals: any;
+};
 
 export type RunnerInformation = {
   language: Language.Rust | Language.Go | Language.MaelstromGo,
@@ -150,6 +166,9 @@ export type RunnerInformation = {
 } | {
   language: Language.JavascriptWebContainer,
   client: WebContainer,
+} | {
+  language: Language.Pyoidide,
+  client: PyodideInterface,
 };
 
 export enum CannonStatus {

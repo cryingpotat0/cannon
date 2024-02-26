@@ -1,4 +1,4 @@
-import { Language } from "./types"
+import { Language, assertUnreachable } from "./types"
 
 export type Template = {
   initialFiles: Record<string, string>,
@@ -17,10 +17,20 @@ export const getTemplate = (language: Language): Template => {
       return goTemplate()
     case Language.MaelstromGo:
       return maelstromGoTemplate()
+    case Language.Pyoidide:
+      return pythonTemplate()
     default:
-      throw new Error(`Unknown language: ${language}`)
+      assertUnreachable(language)
   }
 }
+
+const pythonTemplate = (): Template => ({
+  initialFiles: {
+    'main.py': `print("Hello, world!")`
+  },
+  initialOutput:
+    `Hello, world!`
+});
 
 const rustTemplate = (): Template => ({
   initialFiles: {

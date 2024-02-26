@@ -45,7 +45,15 @@ function Xterminal({
       if (event.name !== CannonEventName.output) {
         return;
       }
-      terminal.write(event.data);
+      console.log('output', event);
+      if (event.clear) {
+        terminal.reset()
+        return;
+      }
+      event.data.split('\n').forEach((line) => {
+        terminal.writeln(line);
+      });
+      // terminal.write(event.data);
     });
 
     setTerminal(terminal);

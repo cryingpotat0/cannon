@@ -1,10 +1,11 @@
 import { useState, createContext, useEffect, useContext, } from 'react';
-import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus, CannonEventName, CannonEventListenerFn, CannonEvent, Highlight, Focus, CannonFiles } from './types';
+import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus, CannonEventName, CannonEventListenerFn, CannonEvent, Highlight, Focus, CannonFiles, assertUnreachable } from './types';
 import { SandboxSetup, loadSandpackClient } from '@codesandbox/sandpack-client';
 import { WebContainer } from "@webcontainer/api";
 import { filesToWebcontainerFiles, filesForSandpack } from './utils';
 
 const Cannon = createContext<CannonContextType | null>(null);
+
 
 export const CannonProvider: React.FC<CannonProviderProps> = ({
   languageProps: initialLanguageProps,
@@ -189,10 +190,57 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           }
         })();
         break;
+      case Language.Pyoidide:
+        (async () => {
+          // @ts-ignore
+          if (!window.loadPyodide) {
+            console.log("adding pyodide script tag");
+            await new Promise((resolve, reject) => {
+              const script = document.createElement('script');
+              document.body.appendChild(script);
+              script.onload = resolve;
+              script.onerror = reject;
+              script.async = true;
+              script.src = 'https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js';
+            })
+          }
+
+          setCannonStatus(CannonStatus.Ready)
+          setRunner({
+            language,
+            // @ts-ignore
+            client: await window.loadPyodide({
+              fullStdLib: true,
+              stdout: (text: string) => {
+                setOutput(prevOutput => `${prevOutput}${text}`);
+                setEvent({
+                  name: CannonEventName.output,
+                  data: text,
+                });
+              },
+              stderr: (text: string) => {
+                setOutput(prevOutput => `${prevOutput}${text}`);
+                setEvent({
+                  name: CannonEventName.output,
+                  data: text,
+                });
+              }
+            }),
+          });
+
+        })();
+
+
+        // TODO: pyodide
+        break
+      default:
+        // Exhaustive match in typescript!!
+        assertUnreachable(language);
     }
     return () => {
       destroyed = true;
       if (webcontainerInstance) {
+        // We can't tear down the webcontainer instance because tehre migh tbe multiple codeblocks on the page :/
         // webcontainerInstance.teardown();
         // webcontainerInstance = undefined;
       }
@@ -312,6 +360,56 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
               return a;
             }, {} as CannonFiles);
           });
+          break;
+        case Language.Pyoidide:
+          // TODO: pyodide
+          const pyodide = runner.client;
+          if (Object.keys(files).length !== 1) throw new Error('Only one file is supported for pyodide');
+          const [_, file] = Object.entries(files)[0];
+          try {
+            await pyodide.runPythonAsync(`
+import sys
+def reformat_exception():
+    from traceback import format_exception
+    # Format a modified exception here
+    # this just prints it normally but you could for instance filter some frames
+    return "".join(
+        format_exception(sys.last_type, sys.last_value, sys.last_traceback)
+    )
+`);
+            await pyodide.runPythonAsync(file.content);
+          } catch (e: any) {
+            let reformat_exception = pyodide.globals.get("reformat_exception");
+            const formatted: string = reformat_exception();
+
+            setOutput(formatted);
+            setEvent({
+              name: CannonEventName.output,
+              data: formatted,
+            });
+
+            // We should be outputting things as individual lines in keeping with teh API.
+            // Well its actually not clear what the API is.
+            // Either way, need to fix this. setEvent doesn't work for many events.
+            // const formattedArr = formatted.split('\n');
+            // for (const line of formattedArr) {
+            //   console.log(line);
+            //   setOutput(prevData => `${prevData}${line}\n`);
+            //   setEvent({
+            //     name: CannonEventName.output,
+            //     data: line,
+            //   });
+            // }
+          }
+          // console.log('output', output);
+          // setOutput(output);
+          // setEvent({
+          //   name: CannonEventName.output,
+          //   data: output,
+          // });
+          break;
+        default:
+          assertUnreachable(language);
       }
       console.log('done running');
       setCannonStatus(CannonStatus.Ready);
