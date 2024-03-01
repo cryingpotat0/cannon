@@ -2,8 +2,7 @@ import { Decoration, DecorationSet, EditorView, Tooltip, showTooltip } from "@co
 import { StateField, StateEffect, Text } from "@codemirror/state"
 import { Highlight } from "./types"
 
-export const addHighlight = StateEffect.define<Highlight>()
-export const resetHighlightsEffect = StateEffect.define()
+export const setHighlights = StateEffect.define<Highlight[]>()
 
 function addRange({
   ranges, highlight, doc
@@ -31,21 +30,23 @@ const highlightedRanges = StateField.define({
   create() {
     return Decoration.none
   },
-  update(_, tr) {
+  update(oldHighlights, tr) {
     let ranges: DecorationSet = Decoration.none
+    console.log('updating highlights')
+    if (tr.docChanged) {
+      return ranges
+    }
     for (let e of tr.effects) {
-      // if (e.is(resetHighlightsEffect)) {
-      //   console.log('resetting highlights')
-      //   return Decoration.none
-      // }
-      if (e.is(addHighlight)) {
+      if (e.is(setHighlights)) {
         console.log('adding highlights')
-        ranges = addRange({
-          ranges, highlight: e.value, doc: tr.state.doc
-        })
+        for (const highlight of e.value) {
+          ranges = addRange({
+            ranges, highlight, doc: tr.state.doc
+          })
+        }
       }
     }
-    // if (ranges === Decoration.none) return oldHighlights
+    if (ranges === Decoration.none) return oldHighlights
     return ranges
   },
   provide: field => EditorView.decorations.from(field)
@@ -55,48 +56,50 @@ const highlightedRanges = StateField.define({
 const cursorTooltipField = StateField.define<readonly Tooltip[]>({
   create: () => [],
 
-  update(_, tr) {
+  update(oldTooltips, tr) {
     const doc = tr.state.doc;
-    const tooltips: Tooltip[] = [];
+    let tooltips: Tooltip[] = [];
+    if (tr.docChanged) {
+      return [];
+    }
     for (let e of tr.effects) {
-      // if (e.is(resetHighlightsEffect)) {
-      //   return [];
-      // }
-      if (e.is(addHighlight)) {
-        const annotation = e.value.annotation;
-        if (!annotation) continue;
-        const highlight = e.value;
-        const from = doc.line(highlight.start.line).from + (highlight.start.ch || 0);
-        let to;
-        if (highlight.end.ch) {
-          to = doc.line(highlight.end.line).from + highlight.end.ch;
-        } else {
-          to = doc.line(highlight.end.line).to;
-        }
-        let styleString = '';
-        if (annotation.style) {
-          styleString = Object.entries(annotation.style).map(([key, value]) => `${key}:${value}`).join(';');
-        }
-        tooltips.push({
-          pos: from,
-          end: to,
-          arrow: true,
-          above: true,
-          create: () => {
-            let dom = document.createElement("div")
-            dom.className = "cm-tooltip-cursor"
-            dom.textContent = annotation.content
-            // @ts-ignore
-            dom.style = styleString
-            return {
-              dom,
-            }
+      if (e.is(setHighlights)) {
+        tooltips = [];
+        for (const highlight of e.value) {
+          const annotation = highlight.annotation;
+          if (!annotation) continue;
+          const from = doc.line(highlight.start.line).from + (highlight.start.ch || 0);
+          let to;
+          if (highlight.end.ch) {
+            to = doc.line(highlight.end.line).from + highlight.end.ch;
+          } else {
+            to = doc.line(highlight.end.line).to;
           }
-        })
+          let styleString = '';
+          if (annotation.style) {
+            styleString = Object.entries(annotation.style).map(([key, value]) => `${key}:${value}`).join(';');
+          }
+          tooltips.push({
+            pos: from,
+            end: to,
+            arrow: true,
+            above: true,
+            create: () => {
+              let dom = document.createElement("div")
+              dom.className = "cm-tooltip-cursor"
+              dom.textContent = annotation.content
+              // @ts-ignore
+              dom.style = styleString
+              return {
+                dom,
+              }
+            }
+          })
+        }
       }
     }
 
-    // if (!tooltips.length) return oldTooltips;
+    if (!tooltips.length) return oldTooltips;
     return tooltips;
   },
 

@@ -32,9 +32,15 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     [CannonEventName.output]: [],
     [CannonEventName.reset]: [],
   });
+
+  // Validate focus
+  if (initialFocus) {
+    if (!files[initialFocus.filePath]) {
+      throw new Error(`Focus file ${initialFocus.filePath} does not exist`);
+    }
+  }
   const [focus, setFocus] = useState<Focus>(initialFocus || { filePath: Object.keys(files)[0] });
   const [highlights, setHighlights] = useState<Highlight[] | undefined>(initialHighlights);
-  const [controllable, setControllable] = useState<boolean>(true);
 
   useEffect(() => {
     if (!event) return;
@@ -255,7 +261,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
       runner: undefined,
       output: "",
       cannonStatus: CannonStatus.Unintialized,
-      controllable,
       fileData: {
         files,
         highlights,
@@ -430,11 +435,7 @@ def reformat_exception():
         highlights,
         focus,
       },
-      controllable,
       commands: {
-        setControllable: (controllable) => {
-          setControllable(controllable);
-        },
         updateFile: ({ fileName, content }) => {
           setFiles(prevFiles => ({
             ...prevFiles,
@@ -474,11 +475,8 @@ def reformat_exception():
             }
           };
         },
-        addHighlight: (highlight) => {
-          setHighlights(prevHighlights => {
-            if (!prevHighlights) return [highlight];
-            return [...prevHighlights, highlight];
-          });
+        setHighlights: (highlights) => {
+          setHighlights(highlights);
         },
         changeFocus: (newFocus) => {
           setFocus(newFocus);

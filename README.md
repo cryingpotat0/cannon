@@ -42,3 +42,18 @@ e.g.  for rust
 - xterm js move
 - global window.webContainer instead of inside the react app
 
+### The Big Rewrite
+The abstractions all kind of work, but it feels like there's a lot of rough edges and bad flows right now. A big complication comes from highlighting and focusing. That requires a lot more state to manage and move.
+Another issue is how well the local runners work. Python is single file only sadly, doesn't have support for package installs. Webcontainers are kind of hardcoded to a fixed install process with no way to reset it. Multiple webcontainers on a single page don't work.
+Modal runners need to be fixed for color with the new Xterm runner.
+No docs.
+
+Hmm.
+How to proceed?
+
+Ok, Modal runners should always work. That is top priority.
+I need at least one javascript based container. That is sandpack. Things should work well there, externalResources should be well documented. Failure events should be handled well.
+Python should work with one file documentation shown.
+The highlight and focus API are messed up.
+The only highlight API should be `setHighlights`. Every time setHighlights is called, reset the highlight painting step. Every time something is edited in the file, highlights should be reset. Don't worry about movable comments/ highlights. This means reintroduce resetHighlights as an effect. It makes working with highlights much easier.
+Focus should work better.

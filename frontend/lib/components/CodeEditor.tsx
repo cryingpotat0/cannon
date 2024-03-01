@@ -2,13 +2,13 @@ import CodeMirror from './codemirror';
 import { useEffect, useRef, useState } from 'react';
 
 import { EditorView, ViewUpdate, } from '@codemirror/view';
-import { Extension, EditorSelection, Compartment, EditorState } from '@codemirror/state';
+import { Extension, EditorSelection } from '@codemirror/state';
 import { basicSetup } from 'codemirror';
 import { keymap } from "@codemirror/view";
 import { indentWithTab } from "@codemirror/commands";
 import TabSwitcher, { setActiveTabEffect } from './TabSwitcher';
 import { useCannon } from './context';
-import { addHighlight, highlightExtension } from './highlights';
+import { highlightExtension, setHighlights } from './highlights';
 import { CannonEventName } from './types';
 
 function CodeEditor({
@@ -21,9 +21,7 @@ function CodeEditor({
 
   let editorEl = useRef<HTMLDivElement>(null);
   let cmEditor = useRef<EditorView>(null);
-  const cmEditable = new Compartment;
   const {
-    controllable,
     fileData: {
       files,
       highlights,
@@ -52,8 +50,9 @@ function CodeEditor({
 
       const effects = highlights
         .filter((highlight) => highlight.filePath === activeFile)
-        .map((highlight) => addHighlight.of(highlight));
-      cmEditor.current?.dispatch({ effects });
+      cmEditor.current?.dispatch({
+        effects: setHighlights.of(effects),
+      });
 
     }
     const resetListener = on(CannonEventName.reset, resetCallback);
@@ -61,16 +60,6 @@ function CodeEditor({
       resetListener.dispose();
     }
   }, [cmEditor]);
-
-  useEffect(() => {
-    if (!cmEditor.current) return;
-    console.log('setting controllable to', controllable);
-    cmEditor.current.dispatch({
-      effects:
-        [cmEditable.reconfigure(EditorState.readOnly.of(!controllable))]
-    });
-  }, [controllable]);
-
 
   const { filePath: activeFile, startLine: activeLine } = focus;
   const [currentText, setCurrentText] = useState<string>(files[activeFile].content);
@@ -82,36 +71,13 @@ function CodeEditor({
   // When "currentText" changes, update the file
   // I guess this is what happens when you mix a ref with a state variable.
 
-  // useEffect(() => {
-  //   if (!activeLine || !cmEditor.current) return;
-  //   // Make sure we're on the right file
-  //   if (cmEditor.current.state.doc.toString() !== files[activeFile].content) {
-  //     return;
-  //   }
-
-  //   // Try scrolling 5 lines below so that the line is in the middle of the screen.
-  //   // TODO: there has to be a better way gdi
-  //   let line = cmEditor.current.state.doc.line(activeLine + 5);
-  //   if (!line) {
-  //     line = cmEditor.current.state.doc.line(activeLine);
-  //   }
-  //   cmEditor.current.dispatch({
-  //     scrollIntoView: true,
-  //     selection: EditorSelection.cursor(line.from),
-  //   });
-  // }, [focus]);
-
-
   useEffect(() => {
     if (!cmEditor.current) return;
     if (currentText === files[activeFile].content) return;
-    console.log('updating file', activeFile);
     updateFile({
       fileName: activeFile,
       content: currentText,
     });
-    // Reset highlights in codemirror.
-    // cmEditor.current.dispatch({ effects: [resetHighlightsEffect.of(null)] });
   }, [currentText]);
 
   useEffect(() => {
@@ -128,42 +94,31 @@ function CodeEditor({
       });
     }
 
-
-    // TODO: fix type
-    const highlightEffects = (highlights || [])
-      .filter((highlight) => highlight.filePath === activeFile)
-      .map((highlight) => addHighlight.of(highlight));
-
-    // If we have to scroll lines, we need to do things slightly differently.
-    // Dispatch teh scroll and the highlights together after dispatching the
-    // activeFile event.
-
-    console.log('activeLine', activeLine);
     if (activeLine) {
+      let line;
+      if (cmEditor.current.state.doc.lines >= 10) {
+        line = cmEditor.current.state.doc.line(activeLine + 5);
+      } else {
+        line = cmEditor.current.state.doc.line(activeLine);
+      }
+      cmEditor.current.dispatch({
+        effects: [setActiveTabEffect.of(activeFile)],
+        scrollIntoView: true,
+        selection: EditorSelection.cursor(line.from),
+      });
+    } else {
       cmEditor.current.dispatch({
         effects: [setActiveTabEffect.of(activeFile)],
       });
-
-      let line = cmEditor.current.state.doc.line(activeLine + 5);
-      if (!line) {
-        line = cmEditor.current.state.doc.line(activeLine);
-      }
-      // TODO: this is so janky. All this just to prevent highlights from
-      // disappearing? Has to be a better way. Maybe change the higlight model.
-      // Anyway, it kinda works.
-      setTimeout(() => {
-        cmEditor.current?.dispatch({
-          effects: highlightEffects,
-          scrollIntoView: true,
-          selection: EditorSelection.cursor(line.from),
-        });
-      }, 10);
-    } else {
-      // If we don't have to scroll lines, we can just dispatch the highlights with the new file.
-      cmEditor.current.dispatch({
-        effects: [setActiveTabEffect.of(activeFile), ...highlightEffects],
-      });
     }
+
+    const highlightEffects = (highlights || [])
+      .filter((highlight) => highlight.filePath === activeFile)
+
+    cmEditor.current.dispatch({
+      effects: setHighlights.of(highlightEffects),
+    });
+
   }, [highlights, focus]);
 
   useEffect(() => {
@@ -190,7 +145,6 @@ function CodeEditor({
           activeTab: activeFile,
         }),
         highlightExtension(),
-        cmEditable.of(EditorState.readOnly.of(!controllable)),
       ]
         .concat(onUpdate ? [
           EditorView.updateListener.of((update: ViewUpdate) => {

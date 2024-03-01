@@ -45,7 +45,6 @@ function Xterminal({
       if (event.name !== CannonEventName.output) {
         return;
       }
-      console.log('output', event);
       if (event.clear) {
         terminal.reset()
         return;

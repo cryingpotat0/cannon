@@ -43,15 +43,13 @@ export type CannonContextType = {
   cannonStatus: CannonStatus;
   output: string;
   fileData: FileData;
-  controllable: boolean;
   commands: {
     updateFile: (args: { fileName: string, content: string }) => void;
     updateLanguageProps: (updateFn: (prevLanguageProps: LanguageProps) => LanguageProps) => void;
     run(): void;
     on(event: CannonEventName, listener: CannonEventListenerFn): CannonEventListener;
     changeFocus: (focus: Focus) => void;
-    addHighlight: (highlight: Highlight) => void;
-    setControllable: (controllable: boolean) => void;
+    setHighlights: (highlights: Highlight[]) => void;
     reset(): void;
   },
 }
