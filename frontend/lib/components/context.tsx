@@ -475,8 +475,8 @@ def reformat_exception():
             }
           };
         },
-        setHighlights: (highlights) => {
-          setHighlights(highlights);
+        setHighlights: (arg) => {
+          setHighlights(arg(highlights || []));
         },
         changeFocus: (newFocus) => {
           setFocus(newFocus);

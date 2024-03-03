@@ -38,18 +38,21 @@ export type CannonEvent = {
 
 export type CannonEventListenerFn = (data: CannonEvent) => void;
 
+type highlightFunctionSetter = (prevHighlights: Highlight[]) => Highlight[];
+
 export type CannonContextType = {
   runner?: RunnerInformation;
   cannonStatus: CannonStatus;
   output: string;
   fileData: FileData;
+  highlights: Array<Highlight> | undefined;
   commands: {
     updateFile: (args: { fileName: string, content: string }) => void;
     updateLanguageProps: (updateFn: (prevLanguageProps: LanguageProps) => LanguageProps) => void;
     run(): void;
     on(event: CannonEventName, listener: CannonEventListenerFn): CannonEventListener;
     changeFocus: (focus: Focus) => void;
-    setHighlights: (highlights: Highlight[]) => void;
+    setHighlights: ((setter: highlightFunctionSetter) => void);
     reset(): void;
   },
 }
@@ -88,6 +91,7 @@ export type Highlight = {
   annotation?: {
     content: string;
     style?: Record<string, string>
+    className?: string;
   };
 };
 

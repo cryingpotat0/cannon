@@ -79,6 +79,12 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
           if (annotation.style) {
             styleString = Object.entries(annotation.style).map(([key, value]) => `${key}:${value}`).join(';');
           }
+
+          let classNameString = '';
+          if (annotation.className) {
+            classNameString = annotation.className;
+          };
+
           tooltips.push({
             pos: from,
             end: to,
@@ -86,10 +92,10 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
             above: true,
             create: () => {
               let dom = document.createElement("div")
-              dom.className = "cm-tooltip-cursor"
               dom.textContent = annotation.content
               // @ts-ignore
               dom.style = styleString
+              dom.className = classNameString
               return {
                 dom,
               }
