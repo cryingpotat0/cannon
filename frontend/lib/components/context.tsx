@@ -260,6 +260,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     <Cannon.Provider value={{
       runner: undefined,
       output: "",
+      highlights,
       cannonStatus: CannonStatus.Unintialized,
       fileData: {
         files,
