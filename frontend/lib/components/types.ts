@@ -45,7 +45,6 @@ export type CannonContextType = {
   cannonStatus: CannonStatus;
   output: string;
   fileData: FileData;
-  highlights: Array<Highlight> | undefined;
   commands: {
     updateFile: (args: { fileName: string, content: string }) => void;
     updateLanguageProps: (updateFn: (prevLanguageProps: LanguageProps) => LanguageProps) => void;
@@ -139,6 +138,10 @@ export type LanguageProps = {
   },
 } | {
   language: Language.JavascriptWebContainer,
+  runCommand?: {
+    command: string,
+    args: string[],
+  },
   iframe?: HTMLIFrameElement,
 } | {
   language: Language.Pyoidide,

@@ -133,6 +133,15 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
           // Language props will be updated when the iframe is ready.
           return;
         }
+
+        let { runCommand } = languageProps;
+        if (!runCommand) {
+          runCommand = {
+            command: 'npm',
+            args: ['run', 'start'],
+          };
+        }
+
         (async () => {
           if (!webcontainerInstance) {
             try {
@@ -162,7 +171,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
             throw new Error(`Unable to run npm install ${output}`);
           }
 
-          const startProcess = await webcontainerInstance.spawn('npm', ['run', 'start']);
+          const startProcess = await webcontainerInstance.spawn(runCommand.command, runCommand.args);
           startProcess.output.pipeTo(new WritableStream({
             write(text) {
               setOutput(prevOutput => `${prevOutput}${text}`);
@@ -260,7 +269,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     <Cannon.Provider value={{
       runner: undefined,
       output: "",
-      highlights,
       cannonStatus: CannonStatus.Unintialized,
       fileData: {
         files,

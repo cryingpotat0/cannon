@@ -56,7 +56,6 @@ const TabSwitcher = (
 function headerPanelGenerator({
   setActiveTab,
   tabs,
-  activeTab
 }: { setActiveTab: (tab: string) => void, tabs: string[], activeTab: string }) {
   return function headerPanel(_view: EditorView): Panel {
     let dom = document.createElement("div")
