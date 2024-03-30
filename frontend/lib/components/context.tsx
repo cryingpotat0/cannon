@@ -171,7 +171,9 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
             throw new Error(`Unable to run npm install ${output}`);
           }
 
-          const startProcess = await webcontainerInstance.spawn(runCommand.command, runCommand.args);
+          const startProcess = await webcontainerInstance.spawn(runCommand.command, runCommand.args, {
+            env: runCommand.env,
+          });
           startProcess.output.pipeTo(new WritableStream({
             write(text) {
               setOutput(prevOutput => `${prevOutput}${text}`);

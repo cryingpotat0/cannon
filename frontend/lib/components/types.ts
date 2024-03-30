@@ -141,6 +141,7 @@ export type LanguageProps = {
   runCommand?: {
     command: string,
     args: string[],
+    env?: Record<string, string>,
   },
   iframe?: HTMLIFrameElement,
 } | {
