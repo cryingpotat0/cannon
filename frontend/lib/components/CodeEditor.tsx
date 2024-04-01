@@ -95,9 +95,12 @@ function CodeEditor({
     }
 
     if (activeLine) {
-      let line;
+      // Do a bounds check:
+      if (activeLine < 0 || activeLine >= cmEditor.current.state.doc.lines) {
+        console.error('Invalid line number for focus', focus);
+        return;
+      }
       const activeLinePos = cmEditor.current.state.doc.line(activeLine);
-      line = cmEditor.current.state.doc.line(activeLine + 10);
       cmEditor.current.dispatch(
         {
           effects: [setActiveTabEffect.of(activeFile)],

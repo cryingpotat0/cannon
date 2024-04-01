@@ -13,6 +13,16 @@ function addRange({
     attributes: { style: `background-color: ${highlight.color}` }
   })
 
+
+  if (highlight.start.line < 0 || highlight.start.line >= doc.lines) {
+    console.error('Invalid line number for highlight', highlight);
+    return ranges;
+  }
+  if (highlight.end.line < 0 || highlight.end.line >= doc.lines) {
+    console.error('Invalid line number for highlight', highlight);
+    return ranges;
+  }
+
   const from = doc.line(highlight.start.line).from + (highlight.start.ch || 0);
   let to;
   if (highlight.end.ch) {
@@ -68,6 +78,16 @@ const cursorTooltipField = StateField.define<readonly Tooltip[]>({
         for (const highlight of e.value) {
           const annotation = highlight.annotation;
           if (!annotation) continue;
+          // Do a bounds check:
+          if (highlight.start.line < 0 || highlight.start.line >= doc.lines) {
+            console.error('Invalid line number for highlight', highlight);
+            continue;
+          }
+          if (highlight.end.line < 0 || highlight.end.line >= doc.lines) {
+            console.error('Invalid line number for highlight', highlight);
+            continue;
+          }
+
           const from = doc.line(highlight.start.line).from + (highlight.start.ch || 0);
           let to;
           if (highlight.end.ch) {
