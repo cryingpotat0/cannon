@@ -513,6 +513,12 @@ def reformat_exception():
           setEvent({
             name: CannonEventName.reset,
           });
+          setCannonStatus(cannonStatus => {
+            // TODO: this could lead to weird behavior when reset in the
+            // middle of running.
+            if (cannonStatus === CannonStatus.Running) return CannonStatus.Ready;
+            return CannonStatus.Running;
+          });
         }
       },
     }}>

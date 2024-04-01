@@ -1,0 +1,10 @@
+#code-editor {
+    max-height: 50vh;
+    overflow-y: auto;
+    z-index: -1;
+}
+
+#code-viewer {
+    display: none
+}
+

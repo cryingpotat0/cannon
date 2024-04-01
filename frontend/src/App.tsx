@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Cannon, Language, getTemplate, solarizedLight } from '../lib/main';
+import { Cannon, Language, getTemplate, rosePineDawn, solarizedLight } from '../lib/main';
 import initialFiles from './astro_demo.json';
 import "./App.css";
 
@@ -51,6 +51,7 @@ function CannonInner({
     <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
       <Cannon
         files={initialFiles}
+        editorTheme={rosePineDawn}
         output={""}
         languageProps={{
           language: Language.JavascriptWebContainer,
@@ -62,6 +63,7 @@ function CannonInner({
         }}
         focus={{
           filePath: "src/layouts/Page.astro",
+          startLine: 36,
         }}
         highlights={[
           {

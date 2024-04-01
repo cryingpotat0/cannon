@@ -96,16 +96,22 @@ function CodeEditor({
 
     if (activeLine) {
       let line;
-      if (cmEditor.current.state.doc.lines >= 10) {
-        line = cmEditor.current.state.doc.line(activeLine + 5);
-      } else {
-        line = cmEditor.current.state.doc.line(activeLine);
-      }
-      cmEditor.current.dispatch({
-        effects: [setActiveTabEffect.of(activeFile)],
-        scrollIntoView: true,
-        selection: EditorSelection.cursor(line.from),
-      });
+      const activeLinePos = cmEditor.current.state.doc.line(activeLine);
+      line = cmEditor.current.state.doc.line(activeLine + 10);
+      cmEditor.current.dispatch(
+        {
+          effects: [setActiveTabEffect.of(activeFile)],
+        },
+        {
+          selection: EditorSelection.cursor(activeLinePos.from),
+        },
+        {
+          effects: EditorView.scrollIntoView(activeLinePos.from, {
+            y: 'start',
+            yMargin: 0,
+          }),
+        }
+      );
     } else {
       cmEditor.current.dispatch({
         effects: [setActiveTabEffect.of(activeFile)],

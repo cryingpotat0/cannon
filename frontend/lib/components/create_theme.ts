@@ -436,7 +436,7 @@ export const rosePineDawn: ThemeOptions = {
     selection: '#6e6a8614',
     gutterBackground: '#faf4ed',
     gutterForeground: '#57527970',
-    lineHighlight: '#6e6a860d',
+    lineHighlight: '#e5c5a1',
   },
   styles: [
     {
