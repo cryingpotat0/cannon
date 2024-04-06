@@ -504,20 +504,21 @@ def reformat_exception():
             Object.entries(initialFiles).reduce((a, b) => {
               a[b[0]] = {
                 content: b[1],
-                dirty: false,
+                // We need to set everything to dirty until we finish running.
+                dirty: true,
               };
               return a;
             }, {} as CannonFiles));
-          setLanguageProps(initialLanguageProps);
-          setHighlights(initialHighlights);
-          setEvent({
-            name: CannonEventName.reset,
-          });
           setCannonStatus(cannonStatus => {
             // TODO: this could lead to weird behavior when reset in the
             // middle of running.
             if (cannonStatus === CannonStatus.Running) return CannonStatus.Ready;
             return CannonStatus.Running;
+          });
+          setLanguageProps(initialLanguageProps);
+          setHighlights(initialHighlights);
+          setEvent({
+            name: CannonEventName.reset,
           });
         }
       },
