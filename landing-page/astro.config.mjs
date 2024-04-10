@@ -5,7 +5,7 @@ import react from "@astrojs/react";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://astro-moon-landing.netlify.app/",
+  site: "https://cannon.cryingpotato.com",
   integrations: [tailwind(), react()],
   vite: {
     ssr: {
