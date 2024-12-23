@@ -4,14 +4,16 @@ import initialFiles from './astro_demo.json';
 import "./App.css";
 
 function App() {
-    const { initialFiles } = getTemplate(Language.Pyoidide);
+    const { initialFiles } = getTemplate(Language.Rust);
     return (
         <div style={{ maxWidth: "130ch", margin: "auto", marginTop: "30px" }}>
             <Cannon
                 files={initialFiles}
                 output={"aa"}
+                allowBuilder={true}
                 languageProps={{
-                    language: Language.Pyoidide
+                    language: Language.Rust,
+                    runnerUrl: 'https://cryingpotat0--cannon-runners-run.modal.run',
                 }}
             />
         </div>

@@ -13,68 +13,70 @@ import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/legacy-modes/mode/python';
 
 export const getLanguageExtension = (language: Language): Extension => {
-  switch (language) {
-    case Language.Rust: {
-      return rust();
+    switch (language) {
+        case Language.Rust: {
+            return rust();
+        }
+        case Language.Javascript: {
+            // TODO: The javascript extension seems to break rerunning the code? Very weird.
+            return rust();
+        }
+        case Language.JavascriptWebContainer: {
+            // TODO: The javascript extension seems to break rerunning the code? Very weird.
+            return javascript();
+        }
+        case Language.Go: {
+            return StreamLanguage.define(go);
+        }
+        case Language.MaelstromGo: {
+            return StreamLanguage.define(go);
+        }
+        case Language.Pyoidide: {
+            return StreamLanguage.define(python);
+        }
+        default:
+            assertUnreachable(language);
     }
-    case Language.Javascript: {
-      // TODO: The javascript extension seems to break rerunning the code? Very weird.
-      return rust();
-    }
-    case Language.JavascriptWebContainer: {
-      // TODO: The javascript extension seems to break rerunning the code? Very weird.
-      return javascript();
-    }
-    case Language.Go: {
-      return StreamLanguage.define(go);
-    }
-    case Language.MaelstromGo: {
-      return StreamLanguage.define(go);
-    }
-    case Language.Pyoidide: {
-      return StreamLanguage.define(python);
-    }
-    default:
-      assertUnreachable(language);
-  }
 }
 
 export function Cannon({
-  languageProps,
-  files,
-  output,
-  editorTheme,
-  viewerTheme,
-  onEditorUpdate,
-  terminalConfig,
-  focus,
-  highlights,
+    languageProps,
+    files,
+    output,
+    editorTheme,
+    viewerTheme,
+    onEditorUpdate,
+    terminalConfig,
+    focus,
+    highlights,
+    allowBuilder,
 }: CannonProps) {
 
-  editorTheme ??= solarizedLight;
-  viewerTheme ??= solarizedLight;
+    editorTheme ??= solarizedLight;
+    viewerTheme ??= solarizedLight;
 
 
-  const editorExtensions = [getLanguageExtension(languageProps.language), createTheme(editorTheme),];
+    const editorExtensions = [getLanguageExtension(languageProps.language), createTheme(editorTheme),];
 
-  return (
-    <CannonProvider
-      languageProps={languageProps}
-      files={files}
-      output={output}
-      focus={focus}
-      highlights={highlights}
-    >
-      <CodeEditor
-        extensions={editorExtensions}
-        onUpdate={onEditorUpdate}
-      />
-      <XTerminal
-        config={{
-          ...terminalConfig,
-          theme: viewerTheme,
-        }}
-      />
-    </CannonProvider>
-  )
+    return (
+        <CannonProvider
+            languageProps={languageProps}
+            files={files}
+            output={output}
+            focus={focus}
+            highlights={highlights}
+            allowBuilder={allowBuilder}
+        >
+            <CodeEditor
+                extensions={editorExtensions}
+                onUpdate={onEditorUpdate}
+            />
+            <XTerminal
+                config={{
+                    ...terminalConfig,
+                    theme: viewerTheme,
+                }}
+            />
+        </CannonProvider>
+    )
 }

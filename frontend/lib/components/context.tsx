@@ -1,8 +1,9 @@
 import { useState, createContext, useEffect, useContext, } from 'react';
-import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus, CannonEventName, CannonEventListenerFn, CannonEvent, Highlight, Focus, CannonFiles, assertUnreachable } from './types';
+import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus, CannonEventName, CannonEventListenerFn, CannonEvent, Highlight, Focus, CannonFiles, assertUnreachable, ResetOptions } from './types';
 import { SandboxSetup, loadSandpackClient } from '@codesandbox/sandpack-client';
 import { WebContainer } from "@webcontainer/api";
 import { filesToWebcontainerFiles, filesForSandpack } from './utils';
+import { getTemplate } from './templates';
 
 const Cannon = createContext<CannonContextType | null>(null);
 
@@ -15,6 +16,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     onRun,
     focus: initialFocus,
     highlights: initialHighlights,
+    allowBuilder = false,
 }: CannonProviderProps) => {
     const [runner, setRunner] = useState<RunnerInformation | undefined>(undefined);
     const [cannonStatus, setCannonStatus] = useState<CannonStatus>(CannonStatus.Unintialized);
@@ -32,6 +34,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         [CannonEventName.output]: [],
         [CannonEventName.reset]: [],
     });
+    const [isBuilderActive, setIsBuilderActive] = useState(false);
 
     // Validate focus
     if (initialFocus) {
@@ -287,6 +290,11 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
                 highlights,
                 focus,
             },
+            builderMode: {
+                isEnabled: allowBuilder,
+                isActive: isBuilderActive,
+                setIsActive: setIsBuilderActive,
+            },
             commands: new Proxy({}, {
                 get: noRunnerHandler,
             }) as CannonContextType['commands'],
@@ -321,9 +329,14 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
                             headers.append('Cache-Control', 'no-cache');
                         }
 
+                        const requestFiles = Object.entries(files).reduce((a, [fileName, file]) => {
+                            a[fileName] = file.content;
+                            return a;
+                        }, {} as Record<string, string>);
+
                         // TODO: statically match this type to the runner input type using openapi.
                         const requestBody: any = {
-                            files,
+                            files: requestFiles,
                             command,
                             language,
                         };
@@ -446,93 +459,121 @@ def reformat_exception():
         postRunEffect();
     }, [cannonStatus]);
 
-    return (
-        <Cannon.Provider value={{
-            runner,
-            output,
-            cannonStatus,
-            fileData: {
-                files,
-                highlights,
-                focus,
-            },
-            commands: {
-                updateFile: ({ fileName, content }) => {
-                    setFiles(prevFiles => ({
-                        ...prevFiles,
-                        [fileName]: {
-                            content,
-                            dirty: true,
-                        },
-                    }));
-                },
-                updateLanguageProps: (updateFn) => {
-                    setLanguageProps(updateFn(languageProps));
-                },
-                run(): void {
-                    setCannonStatus(cannonStatus => {
-                        if (cannonStatus === CannonStatus.Running) throw new Error('Already running');
-                        return CannonStatus.Running;
-                    });
-                },
-                on: (eventName, listener) => {
-                    setListeners(prevListeners => {
-                        const existingListeners = prevListeners[eventName] || [];
-                        return {
-                            ...prevListeners,
-                            [eventName]: [...existingListeners, listener],
-                        };
-                    });
-                    return {
-                        dispose: () => {
-                            setListeners(prevListeners => {
-                                const existingListeners = prevListeners[eventName] || [];
-                                const newListeners = existingListeners.filter(l => l !== listener);
-                                return {
-                                    ...prevListeners,
-                                    [eventName]: newListeners,
-                                };
-                            });
-                        }
+    const handleReset = (options?: ResetOptions) => {
+        if (!options || options.type === 'initial') {
+            setOutput("");
+            setEvent({
+                name: CannonEventName.output,
+                data: "",
+                clear: true,
+            });
+            setFocus(initialFocus || { filePath: Object.keys(initialFiles)[0] });
+            setFiles(
+                Object.entries(initialFiles).reduce((a, b) => {
+                    a[b[0]] = {
+                        content: b[1],
+                        dirty: true,
                     };
+                    return a;
+                }, {} as CannonFiles));
+            setCannonStatus(CannonStatus.Running);
+            setLanguageProps(initialLanguageProps);
+            setHighlights(initialHighlights);
+            setEvent({
+                name: CannonEventName.reset,
+            });
+        } else if (options.type === 'language') {
+            const { initialFiles } = getTemplate(options.languageProps.language);
+            setOutput("");
+            setEvent({
+                name: CannonEventName.output,
+                data: "",
+                clear: true,
+            });
+            setFocus({ filePath: Object.keys(initialFiles)[0] });
+            setFiles(
+                Object.entries(initialFiles).reduce((a, b) => {
+                    a[b[0]] = {
+                        content: b[1],
+                        dirty: true,
+                    };
+                    return a;
+                }, {} as CannonFiles));
+            setCannonStatus(CannonStatus.Unintialized);
+            setLanguageProps(options.languageProps);
+            setHighlights(undefined);
+            setEvent({
+                name: CannonEventName.reset,
+            });
+        }
+    };
+
+    return (
+        <Cannon.Provider
+            key={languageProps.language}
+            value={{
+                runner,
+                output,
+                cannonStatus,
+                fileData: {
+                    files,
+                    highlights,
+                    focus,
                 },
-                setHighlights: (arg) => {
-                    setHighlights(arg(highlights || []));
+                builderMode: {
+                    isEnabled: allowBuilder,
+                    isActive: isBuilderActive,
+                    setIsActive: setIsBuilderActive,
                 },
-                changeFocus: (newFocus) => {
-                    setFocus(newFocus);
-                },
-                reset: () => {
-                    setOutput("");
-                    setEvent({
-                        name: CannonEventName.output,
-                        data: "",
-                        clear: true,
-                    });
-                    setFocus(initialFocus || { filePath: Object.keys(initialFiles)[0] });
-                    setFiles(
-                        Object.entries(initialFiles).reduce((a, b) => {
-                            a[b[0]] = {
-                                content: b[1],
-                                // We need to set everything to dirty until we finish running.
+                commands: {
+                    updateFile: ({ fileName, content }) => {
+                        setFiles(prevFiles => ({
+                            ...prevFiles,
+                            [fileName]: {
+                                content,
                                 dirty: true,
+                            },
+                        }));
+                    },
+                    updateLanguageProps: (updateFn) => {
+                        setLanguageProps(updateFn(languageProps));
+                    },
+                    run(): void {
+                        setCannonStatus(cannonStatus => {
+                            if (cannonStatus === CannonStatus.Running) throw new Error('Already running');
+                            return CannonStatus.Running;
+                        });
+                    },
+                    on: (eventName, listener) => {
+                        setListeners(prevListeners => {
+                            const existingListeners = prevListeners[eventName] || [];
+                            return {
+                                ...prevListeners,
+                                [eventName]: [...existingListeners, listener],
                             };
-                            return a;
-                        }, {} as CannonFiles));
-                    setCannonStatus(cannonStatus => {
-                        // TODO: this could lead to weird behavior when reset in the
-                        // middle of running.
-                        if (cannonStatus === CannonStatus.Running) return CannonStatus.Ready;
-                        return CannonStatus.Running;
-                    });
-                    setLanguageProps(initialLanguageProps);
-                    setHighlights(initialHighlights);
-                    setEvent({
-                        name: CannonEventName.reset,
-                    });
-                }
-            },
-        }}>
+                        });
+                        return {
+                            dispose: () => {
+                                setListeners(prevListeners => {
+                                    const existingListeners = prevListeners[eventName] || [];
+                                    const newListeners = existingListeners.filter(l => l !== listener);
+                                    return {
+                                        ...prevListeners,
+                                        [eventName]: newListeners,
+                                    };
+                                });
+                            }
+                        };
+                    },
+                    setHighlights: (arg) => {
+                        setHighlights(arg(highlights || []));
+                    },
+                    changeFocus: (newFocus) => {
+                        setFocus(newFocus);
+                    },
+                    reset: handleReset,
+                },
+            }}>
             {children}
         </Cannon.Provider>
     )

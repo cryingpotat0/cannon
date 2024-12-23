@@ -57,3 +57,6 @@ Python should work with one file documentation shown.
 The highlight and focus API are messed up.
 The only highlight API should be `setHighlights`. Every time setHighlights is called, reset the highlight painting step. Every time something is edited in the file, highlights should be reset. Don't worry about movable comments/ highlights. This means reintroduce resetHighlights as an effect. It makes working with highlights much easier.
 Focus should work better.
+
+## bugs
+- when switching languages in the builder, there's a gap where the buttons aren't disabled but the old language is active

@@ -94,7 +94,12 @@ function Xterminal({
       style={{
         backgroundColor: theme.background,
       }}>
-      <TerminalBanner isLoading={cannonStatus === 'running'} onRun={run} reset={reset} />
+      <TerminalBanner 
+        isLoading={cannonStatus === 'running'} 
+        onRun={run} 
+        reset={reset} 
+        theme={config.theme}
+      />
       <div ref={xtermRef}
         style={{
           paddingLeft: '1.25rem',
