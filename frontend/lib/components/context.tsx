@@ -34,7 +34,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         [CannonEventName.output]: [],
         [CannonEventName.reset]: [],
     });
-    const [isBuilderActive, setIsBuilderActive] = useState(false);
+    const [isBuilderActive, setIsBuilderActive] = useState(allowBuilder);
 
     // Validate focus
     if (initialFocus) {
