@@ -16,10 +16,10 @@ from collections import deque
 
 MAX_REQUESTS_PER_MINUTE = 5
 stub = Stub("cannon_runners")
-stub.rate_limiter = modal.Dict.new()
+stub.rate_limiter = modal.Dict.from_name("cannon_rate_limiter", create_if_missing=True)
 # This is unbounded in size for now, but 🤷.
-stub.request_cache = modal.Dict.new()
-stub.build_registry = modal.Dict.new()
+stub.request_cache = modal.Dict.from_name("cannon_request_cache", create_if_missing=True)
+stub.build_registry = modal.Dict.from_name("cannon_build_registry", create_if_missing=True)
 
 def get_language_runner(lang: RunnerType) -> Runner:
     if lang == RunnerType.RUST:
