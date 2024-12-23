@@ -485,6 +485,7 @@ def reformat_exception():
         } else if (options.type === 'language') {
             const { initialFiles } = getTemplate(options.languageProps.language);
             setOutput("");
+            setCannonStatus(CannonStatus.Unintialized);
             setEvent({
                 name: CannonEventName.output,
                 data: "",
@@ -499,7 +500,6 @@ def reformat_exception():
                     };
                     return a;
                 }, {} as CannonFiles));
-            setCannonStatus(CannonStatus.Unintialized);
             setLanguageProps(options.languageProps);
             setHighlights(undefined);
             setEvent({
