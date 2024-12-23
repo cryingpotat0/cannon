@@ -25,15 +25,12 @@ export type CannonEventListener = {
 
 export enum CannonEventName {
     output = 'output',
-    reset = 'reset',
 };
 
 export type CannonEvent = {
     name: CannonEventName.output,
     data: string,
     clear?: boolean,
-} | {
-    name: CannonEventName.reset,
 };
 
 export type CannonEventListenerFn = (data: CannonEvent) => void;
@@ -45,7 +42,10 @@ export type ResetOptions = {
 } | {
     type: 'language';
     languageProps: LanguageProps;  // Reset to new language
-};
+} | {
+    type: 'upload';
+    data: CannonSerializedProps;  // Reset to new files
+}
 
 export type CannonContextType = {
     runner?: RunnerInformation;
@@ -197,4 +197,14 @@ export enum CannonStatus {
     Unintialized = 'uninitialized',
     Running = 'running',
 }
+
+export type CannonSerializedProps = {
+    languageProps: LanguageProps,
+    files: Record<string, string>;
+    focus: {
+        filePath: string;
+        startLine?: number;
+    };
+    output: string;
+};
 

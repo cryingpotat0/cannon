@@ -1,9 +1,9 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlay, faRefresh, faSpinner, faWrench } from '@fortawesome/free-solid-svg-icons';
-import { MouseEventHandler, useState } from 'react';
+import { faPlay, faRefresh, faSpinner, faWrench, faDownload, faUpload } from '@fortawesome/free-solid-svg-icons';
+import { MouseEventHandler, useRef, useState } from 'react';
 import { useCannon } from './context';
 import { ThemeOptions } from './create_theme';
-import { CannonContextType, Language } from './types';
+import { CannonContextType, Language, CannonSerializedProps } from './types';
 
 const defaultRunnerUrl = 'https://cryingpotat0--cannon-runners-run.modal.run';
 
@@ -125,6 +125,38 @@ const BuilderToggle = ({ theme }: { theme: ThemeOptions }) => {
     );
 };
 
+const downloadProject = (project: CannonSerializedProps) => {
+    const blob = new Blob([JSON.stringify(project, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cannon-project.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+const uploadProject = async (file: File, reset: CannonContextType['commands']['reset']) => {
+    try {
+        const text = await file.text();
+        const project: CannonSerializedProps = JSON.parse(text);
+
+        // Validate the uploaded project structure
+        if (!project.languageProps?.language || !project.files) {
+            throw new Error('Invalid project file');
+        }
+
+        reset({
+            type: 'upload',
+            data: project,
+        });
+    } catch (e) {
+        console.error('Error loading project:', e);
+        alert('Failed to load project file');
+    }
+};
+
 export const TerminalBanner = ({
     onRun,
     reset,
@@ -136,7 +168,32 @@ export const TerminalBanner = ({
     isLoading: boolean,
     theme: ThemeOptions,
 }) => {
-    const { builderMode, runner } = useCannon();
+    const { builderMode, runner, fileData, output } = useCannon();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // TODO: this should just be a command on the runner.
+    const handleDownload = () => {
+        if (!runner) return;
+
+        const runnerInformation = runner;
+
+        const serializedProject: CannonSerializedProps = {
+            // TODO: runnerInformation contains the client, not ideal.
+            languageProps: runnerInformation,
+            files: Object.entries(fileData.files).reduce((acc, [key, value]) => {
+                acc[key] = value.content;
+                return acc;
+            }, {} as Record<string, string>),
+            focus: fileData.focus,
+            output,
+        };
+
+        downloadProject(serializedProject);
+    };
+
+    const handleUpload = () => {
+        fileInputRef.current?.click();
+    };
 
     return (
         <div style={{
@@ -155,10 +212,52 @@ export const TerminalBanner = ({
                 alignItems: "center",
             }}>
                 {builderMode.isActive && runner && (
-                    <LanguageSelect
-                        theme={theme}
-                        currentLanguage={runner.language}
-                    />
+                    <>
+                        <LanguageSelect
+                            theme={theme}
+                            currentLanguage={runner.language}
+                        />
+                        <button
+                            onClick={handleDownload}
+                            style={{
+                                backgroundColor: 'inherit',
+                                border: '0',
+                                borderRadius: '10%',
+                                cursor: 'pointer',
+                                color: theme.settings.foreground,
+                            }}
+                            title="Download Project"
+                        >
+                            <FontAwesomeIcon icon={faDownload} />
+                        </button>
+                        <button
+                            onClick={handleUpload}
+                            style={{
+                                backgroundColor: 'inherit',
+                                border: '0',
+                                borderRadius: '10%',
+                                cursor: 'pointer',
+                                color: theme.settings.foreground,
+                            }}
+                            title="Upload Project"
+                        >
+                            <FontAwesomeIcon icon={faUpload} />
+                        </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            style={{ display: 'none' }}
+                            accept=".json"
+                            onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                    uploadProject(file, reset);
+                                }
+                                // Reset the input
+                                e.target.value = '';
+                            }}
+                        />
+                    </>
                 )}
                 <BuilderToggle theme={theme} />
                 <button

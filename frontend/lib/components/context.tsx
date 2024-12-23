@@ -21,7 +21,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     const [runner, setRunner] = useState<RunnerInformation | undefined>(undefined);
     const [cannonStatus, setCannonStatus] = useState<CannonStatus>(CannonStatus.Unintialized);
     const [output, setOutput] = useState<string>(initialOutput || "");
-    const [event, setEvent] = useState<CannonEvent | undefined>(undefined);
+    const [events, setEvents] = useState<CannonEvent[] | undefined>(undefined);
     const [files, setFiles] = useState<CannonFiles>(Object.entries(initialFiles).reduce((a, b) => {
         a[b[0]] = {
             content: b[1],
@@ -32,7 +32,6 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     const [languageProps, setLanguageProps] = useState(initialLanguageProps);
     const [listeners, setListeners] = useState<Record<CannonEventName, CannonEventListenerFn[]>>({
         [CannonEventName.output]: [],
-        [CannonEventName.reset]: [],
     });
     const [isBuilderActive, setIsBuilderActive] = useState(allowBuilder);
 
@@ -47,11 +46,13 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
 
 
     useEffect(() => {
-        if (!event) return;
-        for (const listener of listeners[event.name]) {
-            listener(event);
+        if (!events?.length) return;
+        for (const event of events) {
+            for (const listener of listeners[event.name]) {
+                listener(event);
+            }
         }
-    }, [event]);
+    }, [events]);
 
     useEffect(() => {
         // Remove highlights for dirty files.
@@ -111,10 +112,10 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
                             const logs = msg.log.flatMap(({ data }) => data + '\n');
                             const text = logs.join('');
                             setOutput(prevOutput => `${prevOutput}${text}`);
-                            setEvent({
+                            setEvents([{
                                 name: CannonEventName.output,
                                 data: text,
-                            });
+                            }]);
                         } else {
                         }
                     });
@@ -161,10 +162,10 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
                     installProcess.output.pipeTo(new WritableStream({
                         write(text) {
                             setOutput(prevOutput => `${prevOutput}${text}`);
-                            setEvent({
+                            setEvents([{
                                 name: CannonEventName.output,
                                 data: text,
-                            });
+                            }]);
                         }
                     }));
 
@@ -181,10 +182,10 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
                     startProcess.output.pipeTo(new WritableStream({
                         write(text) {
                             setOutput(prevOutput => `${prevOutput}${text}`);
-                            setEvent({
+                            setEvents([{
                                 name: CannonEventName.output,
                                 data: text,
-                            });
+                            }]);
                         }
                     }));
 
@@ -233,17 +234,17 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
                             fullStdLib: true,
                             stdout: (text: string) => {
                                 setOutput(prevOutput => `${prevOutput}${text}`);
-                                setEvent({
+                                setEvents([{
                                     name: CannonEventName.output,
                                     data: text,
-                                });
+                                }]);
                             },
                             stderr: (text: string) => {
                                 setOutput(prevOutput => `${prevOutput}${text}`);
-                                setEvent({
+                                setEvents([{
                                     name: CannonEventName.output,
                                     data: text,
-                                });
+                                }]);
                             }
                         }),
                     });
@@ -271,10 +272,10 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     useEffect(() => {
         // Set event for initial output.
         if (initialOutput) {
-            setEvent({
+            setEvents([{
                 name: CannonEventName.output,
                 data: initialOutput,
-            });
+            }]);
         }
     }, []);
     if (!runner || cannonStatus === CannonStatus.Unintialized) {
@@ -308,11 +309,11 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         if (cannonStatus !== CannonStatus.Running) return;
         const postRunEffect = async () => {
             setOutput("");
-            setEvent({
+            setEvents([{
                 name: CannonEventName.output,
                 data: "",
                 clear: true,
-            });
+            }]);
             if (!runner) throw new Error('No runner');
             const { language } = runner;
             switch (language) {
@@ -356,18 +357,18 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
 
                             const text = new TextDecoder().decode(value);
                             setOutput(prevData => `${prevData}${text}`);
-                            setEvent({
+                            setEvents([{
                                 name: CannonEventName.output,
                                 data: text,
-                            });
+                            }]);
                         }
                     } catch (e: any) {
                         // TODO: set output on event, no need to set it up individually.
                         setOutput(e.toString());
-                        setEvent({
+                        setEvents([{
                             name: CannonEventName.output,
                             data: e.toString(),
-                        });
+                        }]);
                     }
                     break;
 
@@ -422,10 +423,10 @@ def reformat_exception():
                         const formatted: string = reformat_exception();
 
                         setOutput(formatted);
-                        setEvent({
+                        setEvents([{
                             name: CannonEventName.output,
                             data: formatted,
-                        });
+                        }]);
 
                         // We should be outputting things as individual lines in keeping with teh API.
                         // Well its actually not clear what the API is.
@@ -460,51 +461,77 @@ def reformat_exception():
     }, [cannonStatus]);
 
     const handleReset = (options?: ResetOptions) => {
-        if (!options || options.type === 'initial') {
-            setOutput("");
-            setEvent({
-                name: CannonEventName.output,
-                data: "",
-                clear: true,
-            });
-            setFocus(initialFocus || { filePath: Object.keys(initialFiles)[0] });
-            setFiles(
-                Object.entries(initialFiles).reduce((a, b) => {
-                    a[b[0]] = {
-                        content: b[1],
-                        dirty: true,
-                    };
-                    return a;
-                }, {} as CannonFiles));
-            setCannonStatus(CannonStatus.Running);
-            setLanguageProps(initialLanguageProps);
-            setHighlights(initialHighlights);
-            setEvent({
-                name: CannonEventName.reset,
-            });
-        } else if (options.type === 'language') {
-            const { initialFiles } = getTemplate(options.languageProps.language);
-            setOutput("");
-            setCannonStatus(CannonStatus.Unintialized);
-            setEvent({
-                name: CannonEventName.output,
-                data: "",
-                clear: true,
-            });
-            setFocus({ filePath: Object.keys(initialFiles)[0] });
-            setFiles(
-                Object.entries(initialFiles).reduce((a, b) => {
-                    a[b[0]] = {
-                        content: b[1],
-                        dirty: true,
-                    };
-                    return a;
-                }, {} as CannonFiles));
-            setLanguageProps(options.languageProps);
-            setHighlights(undefined);
-            setEvent({
-                name: CannonEventName.reset,
-            });
+        switch (options?.type) {
+            case 'initial':
+            case undefined: {
+
+                setOutput("");
+                setEvents([{
+                    name: CannonEventName.output,
+                    data: "",
+                    clear: true,
+                }]);
+                setFocus(initialFocus || { filePath: Object.keys(initialFiles)[0] });
+                setFiles(
+                    Object.entries(initialFiles).reduce((a, b) => {
+                        a[b[0]] = {
+                            content: b[1],
+                            dirty: true,
+                        };
+                        return a;
+                    }, {} as CannonFiles));
+                setCannonStatus(CannonStatus.Running);
+                setLanguageProps(initialLanguageProps);
+                setHighlights(initialHighlights);
+                break
+            }
+            case 'language': {
+                const { initialFiles } = getTemplate(options.languageProps.language);
+                setOutput("");
+                setCannonStatus(CannonStatus.Unintialized);
+                setEvents([{
+                    name: CannonEventName.output,
+                    data: "",
+                    clear: true,
+                }]);
+                setFocus({ filePath: Object.keys(initialFiles)[0] });
+                setFiles(
+                    Object.entries(initialFiles).reduce((a, b) => {
+                        a[b[0]] = {
+                            content: b[1],
+                            dirty: true,
+                        };
+                        return a;
+                    }, {} as CannonFiles));
+                setLanguageProps(options.languageProps);
+                setHighlights(undefined);
+                break
+            }
+
+            case 'upload': {
+                const files = options.data.files;
+                setOutput(options.data.output);
+                setCannonStatus(CannonStatus.Unintialized);
+                setEvents([{
+                    name: CannonEventName.output,
+                    data: options.data.output,
+                    clear: true,
+                }]);
+                setFocus(options.data.focus);
+                setFiles(
+                    Object.entries(files).reduce((a, b) => {
+                        a[b[0]] = {
+                            content: b[1],
+                            dirty: true,
+                        };
+                        return a;
+                    }, {} as CannonFiles));
+                setLanguageProps(options.data.languageProps);
+                setHighlights(undefined);
+                break
+            }
+            default:
+                let _exhaustiveCheck: never = options;
         }
     };
 
@@ -576,7 +603,7 @@ def reformat_exception():
                         setFiles(prevFiles => {
                             const newFiles = { ...prevFiles };
                             delete newFiles[fileName];
-                            
+
                             // If we're deleting the active file, switch to another file
                             if (fileName === focus.filePath) {
                                 const remainingFiles = Object.keys(newFiles);
@@ -584,7 +611,7 @@ def reformat_exception():
                                     setFocus({ filePath: remainingFiles[0] });
                                 }
                             }
-                            
+
                             return newFiles;
                         });
                     },
