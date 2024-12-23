@@ -70,6 +70,7 @@ export function Cannon({
             <CodeEditor
                 extensions={editorExtensions}
                 onUpdate={onEditorUpdate}
+                theme={editorTheme}
             />
             <XTerminal
                 config={{
