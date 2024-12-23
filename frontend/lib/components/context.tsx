@@ -572,6 +572,22 @@ def reformat_exception():
                         setFocus(newFocus);
                     },
                     reset: handleReset,
+                    deleteFile: (fileName: string) => {
+                        setFiles(prevFiles => {
+                            const newFiles = { ...prevFiles };
+                            delete newFiles[fileName];
+                            
+                            // If we're deleting the active file, switch to another file
+                            if (fileName === focus.filePath) {
+                                const remainingFiles = Object.keys(newFiles);
+                                if (remainingFiles.length > 0) {
+                                    setFocus({ filePath: remainingFiles[0] });
+                                }
+                            }
+                            
+                            return newFiles;
+                        });
+                    },
                 },
             }}>
             {children}

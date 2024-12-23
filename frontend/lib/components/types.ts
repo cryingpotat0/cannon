@@ -65,6 +65,7 @@ export type CannonContextType = {
         changeFocus: (focus: Focus) => void;
         setHighlights: ((setter: highlightFunctionSetter) => void);
         reset(options?: ResetOptions): void;
+        deleteFile: (fileName: string) => void;
     },
 }
 

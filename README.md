@@ -60,3 +60,5 @@ Focus should work better.
 
 ## bugs
 - when switching languages in the builder, there's a gap where the buttons aren't disabled but the old language is active
+- add an error boundary
+- switching doesn't work perfectly, especially for javascript related things
