@@ -60,13 +60,14 @@ export type CannonContextType = {
     };
     commands: {
         updateFile: (args: { fileName: string, content: string }) => void;
+        deleteFile: (fileName: string) => void;
         updateLanguageProps: (updateFn: (prevLanguageProps: LanguageProps) => LanguageProps) => void;
         run(): void;
         on(event: CannonEventName, listener: CannonEventListenerFn): CannonEventListener;
         changeFocus: (focus: Focus) => void;
         setHighlights: ((setter: highlightFunctionSetter) => void);
         reset(options?: ResetOptions): void;
-        deleteFile: (fileName: string) => void;
+        serialize(): CannonSerializedProps;
     },
 }
 

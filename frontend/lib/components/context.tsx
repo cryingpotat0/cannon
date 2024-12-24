@@ -618,6 +618,20 @@ def reformat_exception():
                             return newFiles;
                         });
                     },
+                    serialize: () => {
+                        if (!runner) throw new Error('No runner');
+                        return {
+                            // TODO: runnerInformation contains the client, not ideal.
+                            languageProps: runner,
+                            files: Object.entries(files).reduce((acc, [key, value]) => {
+                                acc[key] = value.content;
+                                return acc;
+                            }, {} as Record<string, string>),
+                            focus,
+                            output,
+                        };
+
+                    }
                 },
             }}>
             {children}

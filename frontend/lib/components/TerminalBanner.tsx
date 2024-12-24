@@ -168,27 +168,12 @@ export const TerminalBanner = ({
     isLoading: boolean,
     theme: ThemeOptions,
 }) => {
-    const { builderMode, runner, fileData, output } = useCannon();
+    const { builderMode, commands: { serialize } } = useCannon();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // TODO: this should just be a command on the runner.
     const handleDownload = () => {
-        if (!runner) return;
-
-        const runnerInformation = runner;
-
-        const serializedProject: CannonSerializedProps = {
-            // TODO: runnerInformation contains the client, not ideal.
-            languageProps: runnerInformation,
-            files: Object.entries(fileData.files).reduce((acc, [key, value]) => {
-                acc[key] = value.content;
-                return acc;
-            }, {} as Record<string, string>),
-            focus: fileData.focus,
-            output,
-        };
-
-        downloadProject(serializedProject);
+        downloadProject(serialize())
     };
 
     const handleUpload = () => {
