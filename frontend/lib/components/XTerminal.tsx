@@ -51,6 +51,16 @@ function Xterminal({
             }
             if (event.data) {
                 event.data.split('\n').forEach((line) => {
+                    if (line.startsWith('stderr:')) {
+                        line = line.replace('stderr:', '');
+                        line = '\x1b[31m' + line + '\x1b[0m';
+                    }
+
+                    if (line.startsWith('stdout:')) {
+                        line = line.replace('stdout:', '');
+                        line = '\x1b[32m' + line + '\x1b[0m';
+                    }
+
                     terminal.writeln(line);
                 });
             }
