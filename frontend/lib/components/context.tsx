@@ -1,5 +1,5 @@
 import { useState, createContext, useEffect, useContext, } from 'react';
-import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus, CannonEventName, CannonEventListenerFn, CannonEvent, Highlight, Focus, CannonFiles, assertUnreachable, ResetOptions } from './types';
+import { CannonContextType, CannonProviderProps, Language, RunnerInformation, CannonStatus, CannonEventName, CannonEventListenerFn, CannonEvent, Highlight, Focus, CannonFiles, assertUnreachable, ResetOptions, CannonSerializedProps, LanguageProps } from './types';
 import { SandboxSetup, loadSandpackClient } from '@codesandbox/sandpack-client';
 import { WebContainer } from "@webcontainer/api";
 import { filesToWebcontainerFiles, filesForSandpack } from './utils';
@@ -17,6 +17,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     focus: initialFocus,
     highlights: initialHighlights,
     allowBuilder = false,
+    hideLogo,
 }: CannonProviderProps) => {
     const [runner, setRunner] = useState<RunnerInformation | undefined>(undefined);
     const [cannonStatus, setCannonStatus] = useState<CannonStatus>(CannonStatus.Unintialized);
@@ -39,7 +40,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     // Validate focus
     if (initialFocus) {
         if (!files[initialFocus.filePath]) {
-            throw new Error(`Focus file ${initialFocus.filePath} does not exist`);
+            console.error(`Focus file ${initialFocus.filePath} does not exist`);
         }
     }
     const [focus, setFocus] = useState<Focus>(initialFocus || { filePath: Object.keys(files)[0] });
@@ -297,6 +298,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
                 isActive: isBuilderActive,
                 setIsActive: setIsBuilderActive,
             },
+            hideLogo,
             commands: new Proxy({}, {
                 get: noRunnerHandler,
             }) as CannonContextType['commands'],
@@ -555,6 +557,7 @@ def reformat_exception():
                     isActive: isBuilderActive,
                     setIsActive: setIsBuilderActive,
                 },
+                hideLogo,
                 commands: {
                     updateFile: ({ fileName, content }) => {
                         setFiles(prevFiles => ({
@@ -622,7 +625,7 @@ def reformat_exception():
                         if (!runner) throw new Error('No runner');
                         return {
                             // TODO: runnerInformation contains the client, not ideal.
-                            languageProps: runner,
+                            languageProps: serializeLanguageProps(languageProps),
                             files: Object.entries(files).reduce((acc, [key, value]) => {
                                 acc[key] = value.content;
                                 return acc;
@@ -638,6 +641,36 @@ def reformat_exception():
         </Cannon.Provider>
     )
 };
+
+function serializeLanguageProps(languageProps: LanguageProps): CannonSerializedProps['languageProps'] {
+    switch (languageProps.language) {
+        case Language.Rust:
+        case Language.Go:
+        case Language.MaelstromGo:
+            return {
+                language: languageProps.language,
+                runnerUrl: languageProps.runnerUrl,
+                command: languageProps.command,
+                options: languageProps.options,
+            }
+        case Language.Pyoidide:
+            return {
+                language: languageProps.language,
+            }
+        case Language.Javascript:
+            return {
+                language: languageProps.language,
+                options: languageProps.options,
+            }
+        case Language.JavascriptWebContainer:
+            return {
+                language: languageProps.language,
+                runCommand: languageProps.runCommand,
+            }
+        default:
+            assertUnreachable(languageProps);
+    }
+}
 
 
 export const useCannon = (): CannonContextType => {

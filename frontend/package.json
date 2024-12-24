@@ -1,12 +1,16 @@
 {
   "name": "cannon-codeeditor",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
   "files": [
     "dist"
   ],
   "main": "dist/cannon-codeeditor.js",
   "types": "dist/main.d.ts",
+  "sideEffects": [
+    "**/*.svg",
+    "**/*.css"
+  ],
   "scripts": {
     "dev": "vite",
     "build": "tsc --p ./tsconfig-build.json && vite build ",
@@ -22,9 +26,10 @@
     "@fortawesome/free-solid-svg-icons": "^6.4.2",
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@webcontainer/api": "^1.1.8",
+    "@xterm/xterm": "^5.5.0",
     "codemirror": "^6.0.1",
     "lodash.debounce": "^4.0.8",
-    "@xterm/xterm": "^5.5.0"
+    "vite-plugin-svgr": "^4.3.0"
   },
   "peerDependencies": {
     "react": "^18.2.0",

@@ -1,6 +1,9 @@
+/// <reference types="vite-plugin-svgr/client" />
+
 import { useEffect, useRef, useState } from 'react';
 import { ThemeOptions } from './create_theme';
 import { useCannon } from './context';
+import CannonLogo from './assets/cannon.svg?react';
 
 interface TabSwitcherProps {
     setActiveTab: (tab: string) => void;
@@ -18,7 +21,8 @@ const TabSwitcher = ({ setActiveTab, tabs, activeTab, theme }: TabSwitcherProps)
 
     const {
         builderMode: { isEnabled, isActive },
-        commands: { updateFile, deleteFile }
+        commands: { updateFile, deleteFile },
+        hideLogo
     } = useCannon();
 
     const handleCreateFile = () => {
@@ -51,179 +55,204 @@ const TabSwitcher = ({ setActiveTab, tabs, activeTab, theme }: TabSwitcherProps)
 
     useEffect(() => {
         if (activeTabRef.current) {
-            activeTabRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
+            // TODO: this causes the whole page to scroll in
+            // activeTabRef.current.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' });
         }
     }, [activeTabRef.current]);
 
     return (
         <div style={{
             display: 'flex',
-            overflowX: 'auto',
+            overflow: 'hidden',
             padding: '0.25rem 1.25rem 0.5rem 1.25rem',
-            whiteSpace: 'nowrap',
             backgroundColor: theme.settings.background,
             color: theme.settings.foreground,
-            alignItems: 'center',
         }}>
-            {tabs.map((tab, index) => (
-                <div
-                    key={index}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        marginRight: '0.5rem',
-                    }}
-                >
-                    <div
-                        onClick={() => setActiveTab(tab)}
-                        style={{
-                            cursor: 'pointer',
-                            padding: '0.3rem 0.3rem',
-                            fontWeight: activeTab === tab ? 'bold' : 'normal',
-                            fontFamily: 'monospace',
-                        }}
-                        ref={activeTab === tab ? activeTabRef : null}
-                    >
-                        {tab}
-                    </div>
-                    {isEnabled && isActive && (
-                        <div style={{ display: 'flex', alignItems: 'center', marginLeft: '0.3rem' }}>
-                            {deletingFile === tab ? (
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '0.25rem',
-                                    animation: 'slideIn 0.2s ease-out',
-                                }}>
-                                    <button
-                                        onClick={() => handleDeleteFile(tab)}
-                                        style={{
-                                            cursor: 'pointer',
-                                            padding: '0.2rem 0.4rem',
-                                            backgroundColor: theme.settings.foreground,
-                                            color: theme.settings.background,
-                                            border: 'none',
-                                            fontFamily: 'monospace',
-                                            fontSize: '0.8rem',
-                                        }}
-                                    >
-                                        ✓
-                                    </button>
-                                    <button
-                                        onClick={() => setDeletingFile(null)}
-                                        style={{
-                                            cursor: 'pointer',
-                                            padding: '0.2rem 0.4rem',
-                                            backgroundColor: theme.settings.foreground,
-                                            color: theme.settings.background,
-                                            border: 'none',
-                                            fontFamily: 'monospace',
-                                            fontSize: '0.8rem',
-                                        }}
-                                    >
-                                        ✕
-                                    </button>
-                                </div>
-                            ) : (
-                                <div
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setDeletingFile(tab);
-                                    }}
-                                    style={{
-                                        cursor: 'pointer',
-                                        padding: '0.2rem 0.4rem',
-                                        opacity: 0.6,
-                                        transition: 'opacity 0.2s ease',
-                                    }}
-                                >
-                                    🗑️
+            <div
+                style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    width: '100%',
+                }}
+            >
+                <div style={{
+                    display: 'flex',
+                    gap: '0.5rem',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}>
+
+                    {tabs.map((tab, index) => (
+                        <div
+                            key={index}
+                            style={{
+                                display: 'flex',
+                                whiteSpace: 'nowrap',
+                                marginRight: '0.5rem',
+                                overflowX: 'auto',
+                            }}
+                        >
+                            <div
+                                onClick={() => setActiveTab(tab)}
+                                style={{
+                                    cursor: 'pointer',
+                                    padding: '0.3rem 0.3rem',
+                                    fontWeight: activeTab === tab ? 'bold' : 'normal',
+                                    fontFamily: 'monospace',
+                                }}
+                                ref={activeTab === tab ? activeTabRef : null}
+                            >
+                                {tab}
+                            </div>
+                            {isEnabled && isActive && (
+                                <div style={{ display: 'flex', alignItems: 'center', marginLeft: '0.3rem' }}>
+                                    {deletingFile === tab ? (
+                                        <div style={{
+                                            display: 'flex',
+                                            gap: '0.25rem',
+                                            animation: 'slideIn 0.2s ease-out',
+                                        }}>
+                                            <button
+                                                onClick={() => handleDeleteFile(tab)}
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    padding: '0.2rem 0.4rem',
+                                                    backgroundColor: theme.settings.foreground,
+                                                    color: theme.settings.background,
+                                                    border: 'none',
+                                                    fontFamily: 'monospace',
+                                                    fontSize: '0.8rem',
+                                                }}
+                                            >
+                                                ✓
+                                            </button>
+                                            <button
+                                                onClick={() => setDeletingFile(null)}
+                                                style={{
+                                                    cursor: 'pointer',
+                                                    padding: '0.2rem 0.4rem',
+                                                    backgroundColor: theme.settings.foreground,
+                                                    color: theme.settings.background,
+                                                    border: 'none',
+                                                    fontFamily: 'monospace',
+                                                    fontSize: '0.8rem',
+                                                }}
+                                            >
+                                                ✕
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setDeletingFile(tab);
+                                            }}
+                                            style={{
+                                                cursor: 'pointer',
+                                                padding: '0.2rem 0.4rem',
+                                                opacity: 0.6,
+                                                transition: 'opacity 0.2s ease',
+                                            }}
+                                        >
+                                            🗑️
+                                        </div>
+                                    )}
                                 </div>
                             )}
                         </div>
+                    ))}
+                    {isEnabled && isActive && (
+                        <>
+                            {isCreatingFile && (
+                                <div style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '0.5rem',
+                                    animation: 'slideIn 0.2s ease-out',
+                                }}>
+                                    <input
+                                        ref={inputRef}
+                                        type="text"
+                                        value={newFileName}
+                                        onChange={(e) => setNewFileName(e.target.value)}
+                                        onKeyDown={(e) => {
+                                            if (e.key === 'Enter') handleCreateFile();
+                                        }}
+                                        style={{
+                                            background: 'transparent',
+                                            border: 'none',
+                                            borderBottom: `1px solid ${theme.settings.foreground}`,
+                                            color: theme.settings.foreground,
+                                            fontFamily: 'monospace',
+                                            padding: '0.2rem',
+                                            width: '120px',
+                                            outline: 'none',
+                                        }}
+                                        placeholder="filename"
+                                    />
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '0.25rem',
+                                    }}>
+                                        <button
+                                            onClick={handleCreateFile}
+                                            style={{
+                                                cursor: 'pointer',
+                                                padding: '0.2rem 0.4rem',
+                                                backgroundColor: theme.settings.foreground,
+                                                color: theme.settings.background,
+                                                border: 'none',
+                                                fontFamily: 'monospace',
+                                                fontSize: '0.8rem',
+                                            }}
+                                        >
+                                            ✓
+                                        </button>
+                                        <button
+                                            onClick={handleCancel}
+                                            style={{
+                                                cursor: 'pointer',
+                                                padding: '0.2rem 0.4rem',
+                                                backgroundColor: theme.settings.foreground,
+                                                color: theme.settings.background,
+                                                border: 'none',
+                                                fontFamily: 'monospace',
+                                                fontSize: '0.8rem',
+                                            }}
+                                        >
+                                            ✕
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                            <div
+                                onClick={() => !isCreatingFile && setIsCreatingFile(true)}
+                                style={{
+                                    cursor: 'pointer',
+                                    padding: '0.3rem 0.3rem',
+                                    fontFamily: 'monospace',
+                                    alignSelf: 'center',
+                                    userSelect: 'none',
+                                    backgroundColor: isCreatingFile ? 'transparent' : theme.settings.foreground,
+                                    color: isCreatingFile ? theme.settings.foreground : theme.settings.background,
+                                    transition: 'all 0.2s ease',
+                                }}
+                            >
+                                +
+                            </div>
+                        </>
                     )}
                 </div>
-            ))}
-            {isEnabled && isActive && (
-                <>
-                    {isCreatingFile && (
-                        <div style={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '0.5rem',
-                            animation: 'slideIn 0.2s ease-out',
-                        }}>
-                            <input
-                                ref={inputRef}
-                                type="text"
-                                value={newFileName}
-                                onChange={(e) => setNewFileName(e.target.value)}
-                                onKeyDown={(e) => {
-                                    if (e.key === 'Enter') handleCreateFile();
-                                }}
-                                style={{
-                                    background: 'transparent',
-                                    border: 'none',
-                                    borderBottom: `1px solid ${theme.settings.foreground}`,
-                                    color: theme.settings.foreground,
-                                    fontFamily: 'monospace',
-                                    padding: '0.2rem',
-                                    width: '120px',
-                                    outline: 'none',
-                                }}
-                                placeholder="filename"
-                            />
-                            <div style={{
-                                display: 'flex',
-                                gap: '0.25rem',
-                            }}>
-                                <button
-                                    onClick={handleCreateFile}
-                                    style={{
-                                        cursor: 'pointer',
-                                        padding: '0.2rem 0.4rem',
-                                        backgroundColor: theme.settings.foreground,
-                                        color: theme.settings.background,
-                                        border: 'none',
-                                        fontFamily: 'monospace',
-                                        fontSize: '0.8rem',
-                                    }}
-                                >
-                                    ✓
-                                </button>
-                                <button
-                                    onClick={handleCancel}
-                                    style={{
-                                        cursor: 'pointer',
-                                        padding: '0.2rem 0.4rem',
-                                        backgroundColor: theme.settings.foreground,
-                                        color: theme.settings.background,
-                                        border: 'none',
-                                        fontFamily: 'monospace',
-                                        fontSize: '0.8rem',
-                                    }}
-                                >
-                                    ✕
-                                </button>
-                            </div>
+                <div>
+                    {!hideLogo && (
+                        <div>
+                            <a href="https://cannon.cryingpotato.com" target="_blank" rel="noreferrer">
+                                <CannonLogo style={{ width: '2.5rem', height: '2.5rem' }} />
+                            </a>
                         </div>
                     )}
-                    <div
-                        onClick={() => !isCreatingFile && setIsCreatingFile(true)}
-                        style={{
-                            cursor: 'pointer',
-                            padding: '0.2rem 0.4rem',
-                            marginLeft: '0.5rem',
-                            fontFamily: 'monospace',
-                            userSelect: 'none',
-                            backgroundColor: isCreatingFile ? 'transparent' : theme.settings.foreground,
-                            color: isCreatingFile ? theme.settings.foreground : theme.settings.background,
-                            transition: 'all 0.2s ease',
-                        }}
-                    >
-                        +
-                    </div>
-                </>
-            )}
+                </div>
+            </div>
             <style>
                 {`
           @keyframes slideIn {
@@ -238,7 +267,7 @@ const TabSwitcher = ({ setActiveTab, tabs, activeTab, theme }: TabSwitcherProps)
           }
         `}
             </style>
-        </div>
+        </div >
     );
 };
 

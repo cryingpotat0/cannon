@@ -68,7 +68,8 @@ export type CannonContextType = {
         setHighlights: ((setter: highlightFunctionSetter) => void);
         reset(options?: ResetOptions): void;
         serialize(): CannonSerializedProps;
-    },
+    };
+    hideLogo?: boolean;
 }
 
 export type CannonProps = {
@@ -78,6 +79,7 @@ export type CannonProps = {
     // This type is weird for backwards compatibility. Once I find all uses I should move to passing themes as part of these config objects.
     terminalConfig?: Omit<TerminalConfig, 'theme'>,
     allowBuilder?: boolean,
+    hideLogo?: boolean,
 } & CannonProviderProps;
 
 export type TerminalConfig = {
@@ -132,6 +134,7 @@ export type CannonProviderProps = {
     highlights?: Array<Highlight>,
     focus?: Focus,
     allowBuilder?: boolean,
+    hideLogo?: boolean,
 }
 
 

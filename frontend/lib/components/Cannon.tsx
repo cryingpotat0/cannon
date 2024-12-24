@@ -50,6 +50,7 @@ export function Cannon({
     focus,
     highlights,
     allowBuilder,
+    hideLogo,
 }: CannonProps) {
 
     editorTheme ??= solarizedLight;
@@ -66,6 +67,7 @@ export function Cannon({
             focus={focus}
             highlights={highlights}
             allowBuilder={allowBuilder}
+            hideLogo={hideLogo}
         >
             <CodeEditor
                 extensions={editorExtensions}
