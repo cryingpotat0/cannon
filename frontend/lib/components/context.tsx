@@ -32,6 +32,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
     const [languageProps, setLanguageProps] = useState(initialLanguageProps);
     const [listeners, setListeners] = useState<Record<CannonEventName, CannonEventListenerFn[]>>({
         [CannonEventName.output]: [],
+        [CannonEventName.reset]: [],
     });
     const [isBuilderActive, setIsBuilderActive] = useState(allowBuilder);
 
@@ -531,6 +532,8 @@ def reformat_exception():
                 break
             }
             default:
+                // TODO: this obviates the utility of the typecheck, but have to deal with ts annoyance. probably move to eslint?
+                // @ts-ignore
                 let _exhaustiveCheck: never = options;
         }
     };

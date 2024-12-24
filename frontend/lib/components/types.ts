@@ -25,6 +25,7 @@ export type CannonEventListener = {
 
 export enum CannonEventName {
     output = 'output',
+    reset = 'reset',
 };
 
 export type CannonEvent = {

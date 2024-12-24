@@ -13,11 +13,12 @@ const TabSwitcher = ({ setActiveTab, tabs, activeTab, theme }: TabSwitcherProps)
     const activeTabRef = useRef<HTMLDivElement>(null);
     const [isCreatingFile, setIsCreatingFile] = useState(false);
     const [newFileName, setNewFileName] = useState('');
+    const [deletingFile, setDeletingFile] = useState<string | null>(null);
     const inputRef = useRef<HTMLInputElement>(null);
 
     const {
         builderMode: { isEnabled, isActive },
-        commands: { updateFile }
+        commands: { updateFile, deleteFile }
     } = useCannon();
 
     const handleCreateFile = () => {
@@ -35,6 +36,11 @@ const TabSwitcher = ({ setActiveTab, tabs, activeTab, theme }: TabSwitcherProps)
     const handleCancel = () => {
         setNewFileName('');
         setIsCreatingFile(false);
+    };
+
+    const handleDeleteFile = (fileName: string) => {
+        deleteFile(fileName);
+        setDeletingFile(null);
     };
 
     useEffect(() => {
@@ -62,17 +68,79 @@ const TabSwitcher = ({ setActiveTab, tabs, activeTab, theme }: TabSwitcherProps)
             {tabs.map((tab, index) => (
                 <div
                     key={index}
-                    onClick={() => setActiveTab(tab)}
                     style={{
-                        cursor: 'pointer',
-                        padding: '0.3rem 0.3rem',
-                        fontWeight: activeTab === tab ? 'bold' : 'normal',
+                        display: 'flex',
+                        alignItems: 'center',
                         marginRight: '0.5rem',
-                        fontFamily: 'monospace',
                     }}
-                    ref={activeTab === tab ? activeTabRef : null}
                 >
-                    {tab}
+                    <div
+                        onClick={() => setActiveTab(tab)}
+                        style={{
+                            cursor: 'pointer',
+                            padding: '0.3rem 0.3rem',
+                            fontWeight: activeTab === tab ? 'bold' : 'normal',
+                            fontFamily: 'monospace',
+                        }}
+                        ref={activeTab === tab ? activeTabRef : null}
+                    >
+                        {tab}
+                    </div>
+                    {isEnabled && isActive && (
+                        <div style={{ display: 'flex', alignItems: 'center', marginLeft: '0.3rem' }}>
+                            {deletingFile === tab ? (
+                                <div style={{
+                                    display: 'flex',
+                                    gap: '0.25rem',
+                                    animation: 'slideIn 0.2s ease-out',
+                                }}>
+                                    <button
+                                        onClick={() => handleDeleteFile(tab)}
+                                        style={{
+                                            cursor: 'pointer',
+                                            padding: '0.2rem 0.4rem',
+                                            backgroundColor: theme.settings.foreground,
+                                            color: theme.settings.background,
+                                            border: 'none',
+                                            fontFamily: 'monospace',
+                                            fontSize: '0.8rem',
+                                        }}
+                                    >
+                                        ✓
+                                    </button>
+                                    <button
+                                        onClick={() => setDeletingFile(null)}
+                                        style={{
+                                            cursor: 'pointer',
+                                            padding: '0.2rem 0.4rem',
+                                            backgroundColor: theme.settings.foreground,
+                                            color: theme.settings.background,
+                                            border: 'none',
+                                            fontFamily: 'monospace',
+                                            fontSize: '0.8rem',
+                                        }}
+                                    >
+                                        ✕
+                                    </button>
+                                </div>
+                            ) : (
+                                <div
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setDeletingFile(tab);
+                                    }}
+                                    style={{
+                                        cursor: 'pointer',
+                                        padding: '0.2rem 0.4rem',
+                                        opacity: 0.6,
+                                        transition: 'opacity 0.2s ease',
+                                    }}
+                                >
+                                    🗑️
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             ))}
             {isEnabled && isActive && (
