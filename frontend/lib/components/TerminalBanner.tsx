@@ -168,7 +168,7 @@ export const TerminalBanner = ({
     isLoading: boolean,
     theme: ThemeOptions,
 }) => {
-    const { builderMode, commands: { serialize } } = useCannon();
+    const { builderMode, runner, commands: { serialize } } = useCannon();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // TODO: this should just be a command on the runner.
