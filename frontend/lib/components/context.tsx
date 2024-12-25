@@ -286,6 +286,7 @@ export const CannonProvider: React.FC<CannonProviderProps> = ({
         };
         <Cannon.Provider value={{
             runner: undefined,
+            languageProps,
             output: "",
             cannonStatus: CannonStatus.Unintialized,
             fileData: {
@@ -545,6 +546,7 @@ def reformat_exception():
             key={languageProps.language}
             value={{
                 runner,
+                languageProps,
                 output,
                 cannonStatus,
                 fileData: {

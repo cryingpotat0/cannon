@@ -11,6 +11,7 @@ import { CannonProps, Language, assertUnreachable } from './types';
 import { CannonProvider } from './context';
 import { javascript } from '@codemirror/lang-javascript';
 import { python } from '@codemirror/legacy-modes/mode/python';
+import Iframe from './Iframe';
 
 export const getLanguageExtension = (language: Language): Extension => {
     switch (language) {
@@ -51,6 +52,7 @@ export function Cannon({
     highlights,
     allowBuilder,
     hideLogo,
+    iframeAttributes
 }: CannonProps) {
 
     editorTheme ??= solarizedLight;
@@ -80,6 +82,7 @@ export function Cannon({
                     theme: viewerTheme,
                 }}
             />
+            <Iframe {...iframeAttributes} />
         </CannonProvider>
     )
 }

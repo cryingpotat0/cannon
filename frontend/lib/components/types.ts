@@ -1,6 +1,7 @@
 import { SandpackClient } from "@codesandbox/sandpack-client";
 import { ThemeOptions } from "./create_theme";
 import { ViewUpdate } from '@codemirror/view';
+import { IframeHTMLAttributes } from 'react';
 import { WebContainer } from "@webcontainer/api";
 
 
@@ -50,6 +51,7 @@ export type ResetOptions = {
 
 export type CannonContextType = {
     runner?: RunnerInformation;
+    languageProps: LanguageProps;
     cannonStatus: CannonStatus;
     output: string;
     fileData: FileData;
@@ -135,6 +137,7 @@ export type CannonProviderProps = {
     focus?: Focus,
     allowBuilder?: boolean,
     hideLogo?: boolean,
+    iframeAttributes?: IframeHTMLAttributes<HTMLIFrameElement>,
 }
 
 
