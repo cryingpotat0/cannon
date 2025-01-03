@@ -8,7 +8,8 @@ export default function CannonSection() {
     const [language, setLanguage] = useState(Language.Rust);
     const [iframeRef, setIframeRef] = useState();
     const [languageProps, setLanguageProps] = useState({
-        language: Language.Rust
+        language: Language.Rust,
+        runnerUrl: 'https://cryingpotat0--cannon-runners-run.modal.run'
     });
     useEffect(() => {
         if (languageProps.language === language) {
@@ -22,6 +23,7 @@ export default function CannonSection() {
         } else {
             setLanguageProps({
                 language,
+                runnerUrl: 'https://cryingpotat0--cannon-runners-run.modal.run'
             });
         }
     }, [language, iframeRef]);
