@@ -14,7 +14,7 @@ const orderedSites = featuredSites.sort(
 
 <ContentSection title="Showcase" id="showcase">
   <Fragment slot="lead">
-    <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-2 align-middle">
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3 lg:grid-cols-3 align-middle">
       {orderedSites.map((site) => <ShowcaseCard site={site} />)}
     </div>
     <div class="flex justify-center items-center">

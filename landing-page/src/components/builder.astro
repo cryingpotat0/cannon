@@ -1,0 +1,35 @@
+---
+
+import { Cannon, Language, getTemplate, CannonProvider } from "cannon-codeeditor";
+
+const { initialFiles, initialOutput } = getTemplate(Language.Rust);
+---
+
+<section
+  id="builder"
+  class="flex scroll-mt-24 flex-col items-center gap-4 space-y-2"
+>
+  <div class="flex flex-col items-center gap-4">
+    <slot name="eyebrow" />
+    <h2
+      class="gradient-text text-center font-extrabold tracking-tight text-6xl"
+    >
+      Builder Mode
+    </h2>
+  </div>
+  <div class="flex flex-col md:grid md:grid-cols-3 justify-center items-center">
+    <p class="max-w-xl text-center font-extrabold text-2xl md:col-span-1">
+      Built-in editor interface to easily share creations and integrate with CMS-like workloads.
+    </p>
+    <div id="cannon-codeeditor" class="mt-12 md:col-span-2">
+        <Cannon client:load 
+                allowBuilder 
+                languageProps={{
+                    language: Language.Rust,
+                }}
+                files={initialFiles}
+                output={initialOutput}
+                />
+    </div>
+  </div>
+</section>

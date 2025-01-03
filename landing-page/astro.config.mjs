@@ -7,9 +7,13 @@ import react from "@astrojs/react";
 export default defineConfig({
   site: "https://cannon.cryingpotato.com",
   integrations: [tailwind(), react()],
-  vite: {
-    ssr: {
-      external: ["svgo"]
-    }
-  }
+    vite: {
+        ssr: {
+            external: ['svgo'],
+            noExternal: ['cannon-codeeditor'],
+        },
+        // optimizeDeps: {
+        //     exclude: ['cannon-codeeditor']
+        // }
+    },
 });

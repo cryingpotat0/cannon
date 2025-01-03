@@ -22,6 +22,11 @@ function Iframe(props?: IframeHTMLAttributes<HTMLIFrameElement>) {
         return null;
     }
 
+    // The user has passed in an iframe.
+    if ('iframe' in languageProps) {
+        return null
+    }
+
     return (
         <iframe
             ref={iframeRef}

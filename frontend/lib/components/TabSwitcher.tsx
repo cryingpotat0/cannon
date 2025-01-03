@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { ThemeOptions } from './create_theme';
 import { useCannon } from './context';
-import CannonLogo from './assets/cannon.svg?react';
+// import CannonLogo from './assets/cannon.svg?react';
 
 interface TabSwitcherProps {
     setActiveTab: (tab: string) => void;
@@ -247,7 +247,6 @@ const TabSwitcher = ({ setActiveTab, tabs, activeTab, theme }: TabSwitcherProps)
                     {!hideLogo && (
                         <div>
                             <a href="https://cannon.cryingpotato.com" target="_blank" rel="noreferrer">
-                                <CannonLogo style={{ width: '2.5rem', height: '2.5rem' }} />
                             </a>
                         </div>
                     )}
